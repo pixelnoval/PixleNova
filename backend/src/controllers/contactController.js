@@ -27,9 +27,11 @@ export async function submitContact(req, res, next) {
     });
 
     // Fire-and-forget — emails must NOT prevent a successful response
+    // Added .catch() to prevent unhandled promise rejections from crashing the server
+    // if a synchronous error occurs inside the async function before its try/catch block.
     setImmediate(() => {
-      sendEnquiryNotification(contact);
-      sendAcknowledgement(contact);
+      sendEnquiryNotification(contact).catch(err => console.error('[Email] Unexpected notification error:', err.message));
+      sendAcknowledgement(contact).catch(err => console.error('[Email] Unexpected acknowledgement error:', err.message));
     });
 
     res.status(201).json({

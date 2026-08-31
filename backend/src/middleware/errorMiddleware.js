@@ -14,11 +14,17 @@ export function errorMiddleware(err, req, res, next) {
       ? 'An internal server error occurred.'
       : err.message || 'Something went wrong.';
 
-  // Log full error in development, minimal in production
+  // Log full error in development, minimal but useful in production
   if (!env.isProduction) {
     console.error(`[Error] ${req.method} ${req.path}`, err);
   } else {
-    console.error(`[Error] ${statusCode} ${req.method} ${req.path}: ${err.message}`);
+    const sanitizedMsg = (err.message || '').replace(/(:\/\/)[^:]+:[^@]+@/g, '$1***:***@');
+    console.error(`[Error] ${statusCode} ${req.method} ${req.path}`, {
+      name: err.name,
+      code: err.code,
+      message: sanitizedMsg,
+      stack: err.stack,
+    });
   }
 
   res.status(statusCode).json({
