@@ -1,10 +1,10 @@
 import rateLimit from 'express-rate-limit';
 
 // Standard rate-limit response shape
-const handler = (req, res) => {
+const handler = (req, res, next, options) => {
   res.status(429).json({
     success: false,
-    message: 'Too many requests. Please wait and try again.',
+    message: options?.message || 'Too many requests. Please wait and try again.',
   });
 };
 

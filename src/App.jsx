@@ -260,6 +260,7 @@ function App() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setFormNote('');
     const form = e.target;

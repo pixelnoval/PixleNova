@@ -11,6 +11,9 @@ import contactRoutes from './routes/contactRoutes.js';
 
 const app = express();
 
+// ─── TRUST PROXY ─────────────────────────────────────────────────────────────
+app.set('trust proxy', true);
+
 // ─── SECURITY HEADERS ────────────────────────────────────────────────────────
 app.use(helmet());
 
