@@ -824,7 +824,7 @@ function App() {
                     </div>
                   </div>
                   <div className="contact-socials reveal contact-anim-4">
-                    <a className="soc-ic" href="#" aria-label="Instagram"><Instagram /></a>
+                    <a className="soc-ic" href="https://www.instagram.com/__pixelnova__/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram /></a>
                     <a className="soc-ic" href="#" aria-label="Facebook"><Facebook /></a>
                     <a className="soc-ic" href="#" aria-label="LinkedIn"><Linkedin /></a>
                   </div>

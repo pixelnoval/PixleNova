@@ -27,3 +27,5 @@ dist-ssr
 
 temp_jimp/
 temp_map.txt
+
+.firebase/
