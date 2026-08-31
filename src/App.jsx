@@ -679,7 +679,7 @@ function App() {
                       return (
                         <div 
                           key={idx} 
-                          className={`process-step-row reveal reveal-delay-${idx + 1} ${isActive ? 'active' : ''}`}
+                          className={`process-step-row ${isActive ? 'active' : ''}`}
                           onClick={() => setActiveProcessStep(idx)}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveProcessStep(idx); } }}
                           tabIndex={0}
