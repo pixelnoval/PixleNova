@@ -12,7 +12,9 @@ import contactRoutes from './routes/contactRoutes.js';
 const app = express();
 
 // ─── TRUST PROXY ─────────────────────────────────────────────────────────────
-app.set('trust proxy', true);
+// Use 1 to trust Render's immediate reverse proxy and accurately extract client IP.
+// `true` is too permissive and triggers express-rate-limit ERR_ERL_PERMISSIVE_TRUST_PROXY.
+app.set('trust proxy', 1);
 
 // ─── SECURITY HEADERS ────────────────────────────────────────────────────────
 app.use(helmet());
