@@ -14,8 +14,10 @@ export async function seedAdmin() {
   const normalizedEmail = emailSeed.trim().toLowerCase();
 
   try {
-    const existingAdmin = await prisma.admin.findUnique({
-      where: { email: normalizedEmail }
+    const existingAdmin = await prisma.admin.findFirst({
+      where: {
+        email: { equals: normalizedEmail, mode: 'insensitive' }
+      }
     });
 
     if (existingAdmin) {

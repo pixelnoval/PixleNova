@@ -18,8 +18,12 @@ export async function login(req, res, next) {
 
     const { email, password } = data;
 
-    // Look up admin — use a generic error to avoid leaking account existence
-    const admin = await prisma.admin.findUnique({ where: { email } });
+    // Look up admin — use case-insensitive search so 'Pixelnovaltd@gmail.com' matches
+    const admin = await prisma.admin.findFirst({ 
+      where: { 
+        email: { equals: email, mode: 'insensitive' } 
+      } 
+    });
 
     if (!admin) {
       // Simulate hash comparison timing to prevent timing attacks
