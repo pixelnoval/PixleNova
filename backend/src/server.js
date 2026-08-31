@@ -64,11 +64,14 @@ app.use('/api/contact', contactRoutes);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
+import { seedAdmin } from './utils/seedAdmin.js';
+
 // ─── STARTUP ─────────────────────────────────────────────────────────────────
 async function start() {
   try {
     await prisma.$connect();
     console.log('✅  Database connected');
+    await seedAdmin();
   } catch (err) {
     console.error('❌  Database connection failed:', err.message);
     // Fail fast in production — in dev the server still starts for local testing
