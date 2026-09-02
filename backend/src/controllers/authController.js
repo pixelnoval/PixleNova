@@ -33,7 +33,7 @@ export async function login(req, res, next) {
 
     const isValid = await argon2.verify(admin.passwordHash, password);
     if (!isValid) {
-      console.warn(\`[Auth] Failed login attempt for: \${email}\`);
+      console.warn(`[Auth] Failed login attempt for: ${email}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
 
