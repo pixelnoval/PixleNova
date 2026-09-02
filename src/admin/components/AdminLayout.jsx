@@ -57,7 +57,17 @@ export default function AdminLayout() {
               {label}
             </NavLink>
           ))}
+          {admin?.role === 'SUPER_ADMIN' && (
+            <NavLink
+              to="/admin/admins"
+              className={({ isActive }) => `a-nav-link${isActive ? ' a-nav-link--active' : ''}`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              Admin Management
+            </NavLink>
+          )}
         </nav>
+
 
         <button
           className="a-btn a-btn--ghost a-sidebar__logout"

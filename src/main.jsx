@@ -14,6 +14,7 @@ import LoginPage        from './admin/pages/LoginPage.jsx';
 import DashboardPage    from './admin/pages/DashboardPage.jsx';
 import EnquiriesPage    from './admin/pages/EnquiriesPage.jsx';
 import EnquiryDetailPage from './admin/pages/EnquiryDetailPage.jsx';
+import AdminManagementPage from './admin/pages/AdminManagementPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -56,6 +57,7 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<DashboardPage />} />
           <Route path="enquiries" element={<EnquiriesPage />} />
           <Route path="enquiries/:id" element={<EnquiryDetailPage />} />
+          <Route path="admins" element={<AdminManagementPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

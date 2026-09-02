@@ -11,13 +11,21 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum AdminRole {
+  SUPER_ADMIN
+  STAFF_ADMIN
+}
+
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 model Admin {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  name         String    @default("Admin")
+  email        String    @unique
   passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         AdminRole @default(STAFF_ADMIN)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("admins")
 }

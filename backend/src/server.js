@@ -8,6 +8,7 @@ import { globalLimiter } from './middleware/rateLimitMiddleware.js';
 import { errorMiddleware, notFoundMiddleware } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 

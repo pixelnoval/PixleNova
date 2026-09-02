@@ -30,7 +30,7 @@ export const tokenStorage = {
  * - On 401: clears token and dispatches a custom event for AuthContext to handle
  * - Throws on non-2xx responses with the backend's message field
  */
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const token = tokenStorage.get();
   const headers = {
     'Content-Type': 'application/json',
@@ -66,6 +66,7 @@ async function request(path, options = {}) {
 }
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
+
 
 export const authApi = {
   /** POST /api/auth/login → { data: { token, admin } } */

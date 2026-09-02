@@ -33,12 +33,19 @@ export async function login(req, res, next) {
 
     const isValid = await argon2.verify(admin.passwordHash, password);
     if (!isValid) {
-      console.warn(`[Auth] Failed login attempt for: ${email}`);
+      console.warn(\`[Auth] Failed login attempt for: \${email}\`);
       return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
 
+    if (!admin.isActive) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'This admin account has been disabled. Contact the Super Admin.' 
+      });
+    }
+
     const token = jwt.sign(
-      { id: admin.id, email: admin.email },
+      { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
       env.jwtSecret,
       { expiresIn: env.jwtExpiresIn }
     );
@@ -50,7 +57,7 @@ export async function login(req, res, next) {
       message: 'Login successful.',
       data: {
         token,
-        admin: { id: admin.id, email: admin.email },
+        admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
       },
     });
   } catch (err) {

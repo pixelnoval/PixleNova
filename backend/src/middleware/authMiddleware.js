@@ -26,3 +26,14 @@ export function requireAuth(req, res, next) {
     return next(createError('Invalid authentication token.', 401));
   }
 }
+
+/**
+ * Middleware that requires the admin to have the SUPER_ADMIN role.
+ * Must be used after requireAuth.
+ */
+export function requireSuperAdmin(req, res, next) {
+  if (!req.admin || req.admin.role !== 'SUPER_ADMIN') {
+    return next(createError('Super Admin access required.', 403));
+  }
+  next();
+}

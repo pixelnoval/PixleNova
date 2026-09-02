@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 /**
@@ -10,7 +10,8 @@ import { useAuth } from '../context/AuthContext.jsx';
  * /admin/login must NEVER be wrapped by this component.
  */
 export default function ProtectedRoute({ children }) {
-  const { status } = useAuth();
+  const { status, admin } = useAuth();
+  const location = useLocation();
 
   if (status === 'loading') {
     return (
@@ -23,6 +24,10 @@ export default function ProtectedRoute({ children }) {
 
   if (status === 'unauthenticated') {
     return <Navigate to="/admin/login" replace />;
+  }
+  
+  if (admin?.role !== 'SUPER_ADMIN' && location.pathname === '/admin/admins') {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;

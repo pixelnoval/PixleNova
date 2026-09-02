@@ -97,3 +97,86 @@ export function validateStatusUpdate(body) {
 
   return { error: null, status };
 }
+
+/**
+ * Validates creating a new Admin.
+ */
+export function validateCreateAdmin(body) {
+  const errors = [];
+
+  const name = sanitizeString(body?.name ?? '');
+  const email = sanitizeString(body?.email ?? '').toLowerCase();
+  const password = body?.password ?? '';
+
+  if (!name) {
+    errors.push('Name is required.');
+  } else if (name.length < 2) {
+    errors.push('Name must be at least 2 characters.');
+  }
+
+  if (!email) {
+    errors.push('Email is required.');
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.push('Please provide a valid email address.');
+  }
+
+  if (!password) {
+    errors.push('Password is required.');
+  } else if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long.');
+  }
+
+  return { errors, data: { name, email, password } };
+}
+
+/**
+ * Validates updating an Admin.
+ */
+export function validateUpdateAdmin(body) {
+  const errors = [];
+
+  const name = sanitizeString(body?.name ?? '');
+  const email = sanitizeString(body?.email ?? '').toLowerCase();
+
+  if (name && name.length < 2) {
+    errors.push('Name must be at least 2 characters.');
+  }
+
+  if (email && !EMAIL_REGEX.test(email)) {
+    errors.push('Please provide a valid email address.');
+  }
+
+  return { errors, data: { name, email } };
+}
+
+/**
+ * Validates admin password reset.
+ */
+export function validatePasswordReset(body) {
+  const errors = [];
+  const password = body?.password ?? '';
+
+  if (!password) {
+    errors.push('Password is required.');
+  } else if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long.');
+  }
+
+  return { errors, data: { password } };
+}
+
+/**
+ * Validates admin status update.
+ */
+export function validateAdminStatusUpdate(body) {
+  const errors = [];
+  let isActive = body?.isActive;
+
+  if (typeof isActive !== 'boolean') {
+    if (isActive === 'true') isActive = true;
+    else if (isActive === 'false') isActive = false;
+    else errors.push('isActive must be a boolean.');
+  }
+
+  return { errors, data: { isActive } };
+}
