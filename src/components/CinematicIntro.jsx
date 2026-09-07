@@ -8,7 +8,9 @@ export default function CinematicIntro({
   brandRef
 }) {
   const wrapperRef = useRef(null);
+  const iconRef = useRef(null);
   const textRef = useRef(null);
+  const taglineRef = useRef(null);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
@@ -20,37 +22,44 @@ export default function CinematicIntro({
       return;
     }
 
-    // PHASE 2 - PIXLENOVA IDENTITY REVEAL
-    // Wait a brief moment before revealing text (Dark open)
+    // PHASE 1 - ICON REVEAL
     const t1 = setTimeout(() => {
-      if (textRef.current) {
-        textRef.current.classList.add('intro-text-visible');
-      }
-    }, 400);
+      if (iconRef.current) iconRef.current.classList.add('intro-icon-visible');
+    }, 100);
 
-    // PHASE 3 - GLOBE REVEAL STARTS
+    // PHASE 2 - NAME REVEAL
     const t2 = setTimeout(() => {
+      if (textRef.current) textRef.current.classList.add('intro-text-visible');
+    }, 600);
+
+    // PHASE 3 - TAGLINE REVEAL
+    const t3 = setTimeout(() => {
+      if (taglineRef.current) taglineRef.current.classList.add('intro-tagline-visible');
+    }, 1100);
+
+    // BLEND START (Background starts appearing)
+    const t4 = setTimeout(() => {
       if (onBlendStart) onBlendStart();
-    }, 1000);
+    }, 1600);
 
     // PHASE 6 - CINEMATIC PAUSE & PREPARE REVEAL
-    const t3 = setTimeout(() => {
+    const t5 = setTimeout(() => {
       if (onTextHandoffStart) onTextHandoffStart();
-      if (textRef.current) {
-        textRef.current.classList.add('intro-text-fadeout');
-      }
-    }, 2800);
+      if (iconRef.current) iconRef.current.classList.add('intro-fadeout');
+      if (textRef.current) textRef.current.classList.add('intro-fadeout');
+      if (taglineRef.current) taglineRef.current.classList.add('intro-fadeout');
+    }, 3400);
 
     // PHASE 7 - HERO TEXT REVEAL
-    const t4 = setTimeout(() => {
+    const t6 = setTimeout(() => {
       if (onTextHandoffComplete) onTextHandoffComplete();
       setFading(true);
-    }, 3100);
+    }, 3700);
 
     // COMPLETE STATE
-    const t5 = setTimeout(() => {
+    const t7 = setTimeout(() => {
       if (onComplete) onComplete();
-    }, 4500);
+    }, 5100);
 
     return () => {
       clearTimeout(t1);
@@ -58,13 +67,17 @@ export default function CinematicIntro({
       clearTimeout(t3);
       clearTimeout(t4);
       clearTimeout(t5);
+      clearTimeout(t6);
+      clearTimeout(t7);
     };
   }, [onBlendStart, onComplete, onTextHandoffComplete, onTextHandoffStart]);
 
   return (
     <div className={`cinematic-intro-wrapper ${fading ? 'fade-out' : ''}`} ref={wrapperRef}>
-      <div className="cinematic-brand-text" ref={textRef}>
-        PIXELNOVA
+      <div className="cinematic-brand-composition">
+        <img src="/pixelnova-logo-icon.png" alt="PixelNova official icon" className="cinematic-brand-icon" ref={iconRef} />
+        <div className="cinematic-brand-name" ref={textRef}>PIXELNOVA</div>
+        <div className="cinematic-brand-tagline" ref={taglineRef}>YOUR BUSINESS, ACCELERATED</div>
       </div>
     </div>
   );

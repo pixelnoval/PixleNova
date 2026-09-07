@@ -374,7 +374,10 @@ function App() {
 
         <header className="nav">
           <div className="nav-inner">
-            <a href="#home" className="brand" ref={brandRef} onClick={(e) => handleNavClick(e, 'home')}>PIXELNOVA</a>
+            <a href="#home" className="brand-logo" ref={brandRef} onClick={(e) => handleNavClick(e, 'home')}>
+              <img src="/pixelnova-logo-navbar.png" alt="PixelNova Icon" className="navbar-brand-icon" />
+              <span>PIXELNOVA</span>
+            </a>
             <nav className="links">
               <a href="#services" className={activeSection === 'services' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'services')}>Services</a>
               <a href="#work" className={activeSection === 'work' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'work')}>Work</a>
@@ -403,6 +406,7 @@ function App() {
             <div className="wrap">
               <div className="hero-grid">
                 <div className="hero-content">
+                  <img src="/pixelnova-logo-icon.png" alt="PixelNova Icon" className="hero-brand-icon reveal" />
                   <span className="eyebrow reveal">Digital solutions + creative media</span>
                   <h1 className="hero-title">
                     <span className="reveal reveal-delay-1" style={{ display: 'block' }}>We Create</span>
@@ -868,7 +872,11 @@ function App() {
           <div className="wrap">
             <div className="footer-top">
               <div className="footer-brand">
-                <a href="#home" className="brand" onClick={(e) => handleNavClick(e, 'home')}>PIXELNOVA</a>
+                <a href="#home" className="footer-brand-logo" onClick={(e) => handleNavClick(e, 'home')}>
+                  <img src="/pixelnova-logo-footer.png" alt="PixelNova Icon" className="footer-brand-icon" />
+                  <span>PIXELNOVA</span>
+                </a>
+                <div className="footer-tagline">YOUR BUSINESS, ACCELERATED</div>
                 <p>Digital solutions, creative media and marketing built to make your brand stand out.</p>
               </div>
               <div className="footer-col">
