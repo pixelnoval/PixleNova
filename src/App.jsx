@@ -74,10 +74,7 @@ const servicesData = [
 ];
 
 function App() {
-  // 3-state machine: 'INTRO' → 'TRANSITIONING' → 'COMPLETE'
-  // Initialized as 'INTRO' synchronously so the very first render already has
-  // the overlay covering the homepage — no flash of homepage content.
-  const [introState, setIntroState] = useState('INTRO');
+  const [showIntro, setShowIntro] = useState(true);
   const brandRef = useRef(null);
   const starfieldRef = useStarfield();
   const threeRef = useThreeBackground();
@@ -118,16 +115,6 @@ function App() {
   }, [isServiceModalOpen]);
 
   useEffect(() => {
-    if (introState === 'INTRO') return;
-
-    // ── HERO REVEAL (synchronous, no IntersectionObserver) ──────────────────
-    // Directly add .in to hero elements immediately — no async observer delay.
-    // This fires synchronously within the same React commit that sets TRANSITIONING,
-    // guaranteeing hero content is visible before the overlay fades.
-    document.querySelectorAll('.hero-content .reveal').forEach(el => {
-      el.classList.add('in');
-    });
-
     // ── SCROLL REVEALS (IntersectionObserver for non-hero sections) ──────────
     // Only used for sections that reveal on scroll (services, work, process, etc.)
     const revealOptions = { rootMargin: '0px 0px -8% 0px', threshold: 0 };
@@ -154,7 +141,7 @@ function App() {
 
     // Observe only non-hero .reveal elements for scroll-driven reveals
     document.querySelectorAll('.reveal').forEach(el => {
-      if (!el.closest('.hero-content')) observer.observe(el);
+      if (!el.closest('.hero-content') && !el.classList.contains('bg3d-tag')) observer.observe(el);
     });
     document.querySelectorAll('.reveal-section').forEach(el => sectionRevealObserver.observe(el));
 
@@ -219,7 +206,7 @@ function App() {
       sectionRevealObserver.disconnect();
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [introState]);
+  }, []);
 
   const handleNavClick = (e, sectionId) => {
     e.preventDefault();
@@ -306,35 +293,22 @@ function App() {
 
 
   useEffect(() => {
-    // Lock scroll only while the intro overlay is fully opaque
-    // Release at TRANSITIONING so user can interact as overlay fades
-    if (introState === 'INTRO') {
+    // Lock scroll only while the intro overlay is present
+    if (showIntro) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [introState]);
-
-  // useCallback ensures these functions have stable references across renders.
-  // Without this, every state change would recreate the functions, changing
-  // CinematicIntro's effect dependencies and restarting all timers.
-  const handleTransitionStart = useCallback(() => {
-    setIntroState('TRANSITIONING');
-  }, []);
-
-  const handleComplete = useCallback(() => {
-    setIntroState('COMPLETE');
-  }, []);
+  }, [showIntro]);
 
   return (
     <>
-      <div className={`app-container${introState !== 'COMPLETE' ? ' intro-active' : ''}${introState !== 'INTRO' ? ' hero-revealing' : ''}`}>
+      <div className="app-container">
 
-        {introState !== 'COMPLETE' && (
+        {showIntro && (
           <CinematicIntro
-            onTransitionStart={handleTransitionStart}
-            onComplete={handleComplete}
+            onComplete={() => setShowIntro(false)}
           />
         )}
 

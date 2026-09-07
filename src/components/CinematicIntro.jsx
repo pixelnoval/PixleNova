@@ -3,94 +3,72 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * CinematicIntro — PixelNova Brand Intro Overlay
  *
- * StrictMode fix: `started.current` is RESET to false in the cleanup
- * function so that StrictMode's mount→cleanup→remount cycle re-runs
- * the timer sequence correctly on the second (real) mount.
+ * Pure visual overlay: homepage is already rendered underneath.
+ * StrictMode-safe timer cleanup.
  *
  * Timeline:
  *   0.10s  – Icon fades in
  *   0.60s  – PIXELNOVA wordmark reveals
  *   1.10s  – Tagline appears
- *   1.80s  – onTransitionStart: hero gets .in classes DIRECTLY (no observer)
- *            Hero fully visible by ~2.75s (1.8 + 0.55s transition + 0.4s max delay)
  *   2.50s  – Brand composition fades
- *   2.80s  – Overlay CSS fade begins (1.2s) — hero already fully visible
- *   4.00s  – onComplete: intro unmounts cleanly
+ *   2.80s  – Overlay CSS fade begins (1.2s)
+ *   ~4.00s – onTransitionEnd calls onComplete to unmount
  */
-export default function CinematicIntro({ onTransitionStart, onComplete }) {
-  const wrapperRef  = useRef(null);
-  const iconRef     = useRef(null);
-  const textRef     = useRef(null);
-  const taglineRef  = useRef(null);
-  const started     = useRef(false);
-  const [fading, setFading] = useState(false);
+export default function CinematicIntro({ onComplete }) {
+  const [isExiting, setIsExiting] = useState(false);
+  const wrapperRef = useRef(null);
+  const iconRef = useRef(null);
+  const textRef = useRef(null);
+  const taglineRef = useRef(null);
 
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
+    const timers = [];
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
-      if (onTransitionStart) onTransitionStart();
-      setFading(true);
-      const t = setTimeout(() => { if (onComplete) onComplete(); }, 300);
-      return () => {
-        clearTimeout(t);
-        started.current = false; // reset for StrictMode remount
-      };
+      setIsExiting(true);
+      return;
     }
 
-    const timers = [];
-    const after = (ms, fn) => { const id = setTimeout(fn, ms); timers.push(id); };
+    timers.push(setTimeout(() => {
+      iconRef.current?.classList.add('intro-icon-visible');
+    }, 100));
 
-    // Phase 1 — icon
-    after(100, () => {
-      if (iconRef.current) iconRef.current.classList.add('intro-icon-visible');
-    });
+    timers.push(setTimeout(() => {
+      textRef.current?.classList.add('intro-text-visible');
+    }, 600));
 
-    // Phase 2 — wordmark
-    after(600, () => {
-      if (textRef.current) textRef.current.classList.add('intro-text-visible');
-    });
+    timers.push(setTimeout(() => {
+      taglineRef.current?.classList.add('intro-tagline-visible');
+    }, 1100));
 
-    // Phase 3 — tagline
-    after(1100, () => {
-      if (taglineRef.current) taglineRef.current.classList.add('intro-tagline-visible');
-    });
+    timers.push(setTimeout(() => {
+      iconRef.current?.classList.add('intro-fadeout');
+      textRef.current?.classList.add('intro-fadeout');
+      taglineRef.current?.classList.add('intro-fadeout');
+    }, 2500));
 
-    // Phase 4 — signal App: directly add .in to hero (synchronous, no observer)
-    after(1800, () => {
-      if (onTransitionStart) onTransitionStart();
-    });
-
-    // Phase 5 — brand fades while hero is already revealing underneath
-    after(2500, () => {
-      if (iconRef.current)    iconRef.current.classList.add('intro-fadeout');
-      if (textRef.current)    textRef.current.classList.add('intro-fadeout');
-      if (taglineRef.current) taglineRef.current.classList.add('intro-fadeout');
-    });
-
-    // Phase 6 — overlay fades. Hero is fully visible at this point (1800+550+400=2750ms).
-    after(2800, () => {
-      setFading(true); // CSS: opacity 1 → 0 over 1.2s
-    });
-
-    // Phase 7 — unmount (2800 + 1200 = 4000ms)
-    after(4000, () => {
-      if (onComplete) onComplete();
-    });
+    timers.push(setTimeout(() => {
+      setIsExiting(true); // Triggers CSS opacity transition
+    }, 2800));
 
     return () => {
       timers.forEach(clearTimeout);
-      started.current = false; // CRITICAL: reset so StrictMode's re-mount re-runs correctly
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleTransitionEnd = (e) => {
+    // Only unmount when the wrapper itself finishes its opacity transition
+    if (e.target === wrapperRef.current && isExiting) {
+      if (onComplete) onComplete();
+    }
+  };
 
   return (
     <div
-      className={`cinematic-intro-wrapper${fading ? ' fade-out' : ''}`}
+      className={`cinematic-intro-wrapper${isExiting ? ' exiting' : ''}`}
       ref={wrapperRef}
+      onTransitionEnd={handleTransitionEnd}
       aria-hidden="true"
     >
       <div className="cinematic-brand-composition">
