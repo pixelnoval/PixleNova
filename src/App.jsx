@@ -119,8 +119,9 @@ function App() {
   }, [isServiceModalOpen]);
 
   useEffect(() => {
-    // We only observe reveals if we are not suppressing them
-    if (introState === 'PLAYING' || introState === 'BLENDING' || introState === 'TEXT_HANDOFF') {
+    // Start reveals at HERO_REVEAL so content appears as the intro overlay is fading out
+    // This eliminates the visible gap between intro and homepage
+    if (introState === 'PLAYING' || introState === 'BLENDING') {
       return;
     }
 
@@ -297,10 +298,10 @@ function App() {
 
 
   useEffect(() => {
-    if (introState !== 'COMPLETE') {
+    // Lock scroll while intro overlay is fully opaque (PLAYING or BLENDING)
+    // Release at HERO_REVEAL so the user can scroll as the overlay fades
+    if (introState === 'PLAYING' || introState === 'BLENDING') {
       document.body.style.overflow = 'hidden';
-      // We don't disable pointer events globally on body because we might want pointer events
-      // on the intro, but the hero content is disabled via css `.hero-intro-pending` pointer-events: none
     } else {
       document.body.style.overflow = '';
     }
@@ -312,7 +313,6 @@ function App() {
   const handleBlendStart = () => {
     setIntroState(prev => {
       if (prev === 'PLAYING') {
-        console.log('BLENDING');
         return 'BLENDING';
       }
       return prev;
@@ -321,8 +321,8 @@ function App() {
 
   const handleTextHandoffStart = () => {
     setIntroState(prev => {
-      if (prev === 'BLENDING') {
-        console.log('TEXT_HANDOFF');
+      // Accept from PLAYING or BLENDING (robust against tight timing)
+      if (prev === 'PLAYING' || prev === 'BLENDING') {
         return 'TEXT_HANDOFF';
       }
       return prev;
@@ -331,8 +331,7 @@ function App() {
 
   const handleTextHandoffComplete = () => {
     setIntroState(prev => {
-      if (prev === 'TEXT_HANDOFF') {
-        console.log('HERO_REVEAL');
+      if (prev === 'TEXT_HANDOFF' || prev === 'BLENDING' || prev === 'PLAYING') {
         return 'HERO_REVEAL';
       }
       return prev;
@@ -345,7 +344,7 @@ function App() {
 
   return (
     <>
-      <div className={`app-container ${introState !== 'COMPLETE' ? 'intro-active' : ''} ${introState === 'PLAYING' || introState === 'BLENDING' || introState === 'TEXT_HANDOFF' ? 'hero-intro-pending' : ''}`}>
+      <div className={`app-container ${introState !== 'COMPLETE' ? 'intro-active' : ''} ${introState === 'PLAYING' || introState === 'BLENDING' ? 'hero-intro-pending' : ''}`}>
 
         {introState !== 'COMPLETE' && (
           <CinematicIntro

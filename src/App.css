@@ -2071,7 +2071,9 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 1.4s cubic-bezier(.22,1,.36,1);
+  /* 1.2s matches the JS: onComplete fires at fading+1.2s */
+  transition: opacity 1.2s cubic-bezier(.22,1,.36,1);
+  will-change: opacity;
 }
 
 .cinematic-intro-wrapper.fade-out {
