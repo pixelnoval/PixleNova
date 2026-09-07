@@ -9,10 +9,14 @@ export function useThreeBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    console.log(`[${performance.now().toFixed(1)}ms] Background initialization started`);
+
     // ─── RENDERER ────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    console.log(`[${performance.now().toFixed(1)}ms] Background initialized`);
 
     // ─── SCENE + CAMERA ──────────────────────────────────────────────────────
     const scene = new THREE.Scene();

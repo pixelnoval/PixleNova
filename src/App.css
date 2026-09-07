@@ -1923,22 +1923,8 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   object-fit: contain;
   display: block;
   margin-bottom: 18px;
-  animation: iconFloat 6s ease-in-out infinite;
-}
-
-.hero-brand-icon.reveal {
-  opacity: 0;
-  transform: translateY(25px);
-  clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-  transition: opacity 1.2s cubic-bezier(.22,1,.36,1),
-              transform 1.2s cubic-bezier(.22,1,.36,1),
-              clip-path 1.2s cubic-bezier(.22,1,.36,1);
-}
-
-.hero-brand-icon.reveal.in {
-  opacity: 1;
-  transform: translateY(0);
-  clip-path: polygon(0 -20%, 100% -20%, 100% 120%, 0 120%);
+  opacity: 1 !important;
+  clip-path: none !important;
   animation: iconFloat 6s ease-in-out infinite;
 }
 
@@ -1997,7 +1983,7 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 1.2s cubic-bezier(.22,1,.36,1);
+  transition: opacity 0.8s cubic-bezier(.22, 1, .36, 1);
   will-change: opacity;
 }
 
@@ -2092,26 +2078,32 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
 
 /* ─── HERO REVEAL — AUTONOMOUS CSS ANIMATION ─────────────────────────
  * The homepage renders immediately under the intro overlay.
- * We use an autonomous keyframe animation so the hero animates in on mount
- * independently of JavaScript logic or IntersectionObserver.
+ * Hero elements are GUARANTEED VISIBLE (opacity: 1) as a failsafe.
+ * A graceful entrance float runs during the intro crossfade window (1.6s - 2.4s).
  */
 @keyframes heroEntranceFade {
-  from { opacity: 0; transform: translateY(25px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0.2;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hero-content .reveal {
-  opacity: 1; 
+  opacity: 1 !important; 
   clip-path: none !important; 
   transform: translateY(0);
-  animation: heroEntranceFade 0.8s cubic-bezier(.22, 1, .36, 1) backwards;
+  animation: heroEntranceFade 0.8s cubic-bezier(.22, 1, .36, 1) 1.6s backwards;
   transition: none !important; /* Disconnect from standard scroll reveal transitions */
 }
 
 /* Hero stagger delays */
-.hero-content .reveal                { animation-delay: 0ms   !important; }
-.hero-content .reveal-delay-1        { animation-delay: 80ms  !important; }
-.hero-content .reveal-delay-2        { animation-delay: 160ms !important; }
-.hero-content .reveal-delay-3        { animation-delay: 240ms !important; }
-.hero-content .reveal-delay-4        { animation-delay: 320ms !important; }
-.hero-content .reveal-delay-5        { animation-delay: 400ms !important; }
+.hero-content .reveal                { animation-delay: 1.6s  !important; }
+.hero-content .reveal-delay-1        { animation-delay: 1.7s  !important; }
+.hero-content .reveal-delay-2        { animation-delay: 1.8s  !important; }
+.hero-content .reveal-delay-3        { animation-delay: 1.9s  !important; }
+.hero-content .reveal-delay-4        { animation-delay: 2.0s  !important; }
+.hero-content .reveal-delay-5        { animation-delay: 2.1s  !important; }

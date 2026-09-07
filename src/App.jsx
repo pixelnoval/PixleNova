@@ -79,6 +79,11 @@ function App() {
   const starfieldRef = useStarfield();
   const threeRef = useThreeBackground();
 
+  useEffect(() => {
+    console.log(`[${performance.now().toFixed(1)}ms] App mounted`);
+    console.log(`[${performance.now().toFixed(1)}ms] Hero mounted`);
+  }, []);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [activeSection, setActiveSection] = useState('home');
