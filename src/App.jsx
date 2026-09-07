@@ -118,17 +118,26 @@ function App() {
   }, [isServiceModalOpen]);
 
   useEffect(() => {
-    // Start reveals at TRANSITIONING — hero content appears as intro overlay fades
     if (introState === 'INTRO') return;
 
-    const revealOptions = { rootMargin: '-5% 0px -15% 0px', threshold: 0 };
+    // ── HERO REVEAL (synchronous, no IntersectionObserver) ──────────────────
+    // Directly add .in to hero elements immediately — no async observer delay.
+    // This fires synchronously within the same React commit that sets TRANSITIONING,
+    // guaranteeing hero content is visible before the overlay fades.
+    document.querySelectorAll('.hero-content .reveal').forEach(el => {
+      el.classList.add('in');
+    });
+
+    // ── SCROLL REVEALS (IntersectionObserver for non-hero sections) ──────────
+    // Only used for sections that reveal on scroll (services, work, process, etc.)
+    const revealOptions = { rootMargin: '0px 0px -8% 0px', threshold: 0 };
 
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('in');
           e.target.classList.remove('out');
-          observer.unobserve(e.target); // Reveal once to prevent scroll gap blank screens
+          observer.unobserve(e.target);
         }
       });
     }, revealOptions);
@@ -138,12 +147,15 @@ function App() {
         if (e.isIntersecting) {
           e.target.classList.add('in');
           e.target.classList.remove('out');
-          sectionRevealObserver.unobserve(e.target); // Reveal once to keep DOM stable
+          sectionRevealObserver.unobserve(e.target);
         }
       });
     }, revealOptions);
 
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    // Observe only non-hero .reveal elements for scroll-driven reveals
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (!el.closest('.hero-content')) observer.observe(el);
+    });
     document.querySelectorAll('.reveal-section').forEach(el => sectionRevealObserver.observe(el));
 
     // Robust Active Section Detection
@@ -317,7 +329,7 @@ function App() {
 
   return (
     <>
-      <div className={`app-container${introState !== 'COMPLETE' ? ' intro-active' : ''}`}>
+      <div className={`app-container${introState !== 'COMPLETE' ? ' intro-active' : ''}${introState !== 'INTRO' ? ' hero-revealing' : ''}`}>
 
         {introState !== 'COMPLETE' && (
           <CinematicIntro

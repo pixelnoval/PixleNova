@@ -2164,3 +2164,39 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
     transform: none !important;
   }
 }
+
+/* ─── HERO REVEAL — TIME-DRIVEN, NOT SCROLL-DRIVEN ─────────────────────────
+ *
+ * Hero elements are revealed by direct classList.add('in') in the useEffect,
+ * and by the parent .hero-revealing class as a CSS failsafe.
+ *
+ * Key differences from the general .reveal system:
+ *   - NO clip-path transition (expensive with WebGL, causes frame drops)
+ *   - Shorter 0.55s transition (max 400ms delay → hero done by t=950ms after trigger)
+ *   - Parent-class failsafe guarantees visibility even if .in is never added
+ *
+ * This runs INDEPENDENTLY of IntersectionObserver.
+ */
+
+/* Override .reveal transition for hero elements — GPU-only (opacity + transform) */
+.hero-content .reveal {
+  transition:
+    opacity  0.55s cubic-bezier(.22, 1, .36, 1),
+    transform 0.55s cubic-bezier(.22, 1, .36, 1) !important;
+}
+
+/* Hero stagger — compressed to 0–400ms (vs standard 0–840ms) */
+.hero-content .reveal { transition-delay: 0ms !important; }
+.hero-content .reveal-delay-1 { transition-delay: 80ms  !important; }
+.hero-content .reveal-delay-2 { transition-delay: 160ms !important; }
+.hero-content .reveal-delay-3 { transition-delay: 240ms !important; }
+.hero-content .reveal-delay-4 { transition-delay: 320ms !important; }
+.hero-content .reveal-delay-5 { transition-delay: 400ms !important; }
+
+/* CSS failsafe: if .hero-revealing is present on app-container,
+ * hero elements are forced visible regardless of .in class state.
+ * This is a belt-and-suspenders guarantee — the JS also adds .in directly. */
+.hero-revealing .hero-content .reveal {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
