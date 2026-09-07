@@ -2167,36 +2167,43 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
 
 /* ─── HERO REVEAL — TIME-DRIVEN, NOT SCROLL-DRIVEN ─────────────────────────
  *
- * Hero elements are revealed by direct classList.add('in') in the useEffect,
- * and by the parent .hero-revealing class as a CSS failsafe.
+ * ROOT CAUSE OF BLANK SCREEN (now fixed):
+ * The base .reveal class sets clip-path:polygon(0 0,100% 0,100% 0,0 0)
+ * which is a zero-height clipping box. Hero elements were physically
+ * invisible (clipped to 0px height) even when opacity:1.
+ * Previous fixes removed clip-path from the transition list but never
+ * reset the clip-path VALUE — so elements stayed clipped.
  *
- * Key differences from the general .reveal system:
- *   - NO clip-path transition (expensive with WebGL, causes frame drops)
- *   - Shorter 0.55s transition (max 400ms delay → hero done by t=950ms after trigger)
- *   - Parent-class failsafe guarantees visibility even if .in is never added
- *
- * This runs INDEPENDENTLY of IntersectionObserver.
+ * Fix: force clip-path:none on all hero .reveal elements so they are
+ * never clipped regardless of .in class state.
  */
 
-/* Override .reveal transition for hero elements — GPU-only (opacity + transform) */
+/* Step 1: Override all clip-path for hero .reveal — they must never be clipped */
+.hero-content .reveal {
+  clip-path: none !important;
+}
+
+/* Step 2: GPU-only transition — opacity + transform only */
 .hero-content .reveal {
   transition:
     opacity  0.55s cubic-bezier(.22, 1, .36, 1),
     transform 0.55s cubic-bezier(.22, 1, .36, 1) !important;
 }
 
-/* Hero stagger — compressed to 0–400ms (vs standard 0–840ms) */
-.hero-content .reveal { transition-delay: 0ms !important; }
-.hero-content .reveal-delay-1 { transition-delay: 80ms  !important; }
-.hero-content .reveal-delay-2 { transition-delay: 160ms !important; }
-.hero-content .reveal-delay-3 { transition-delay: 240ms !important; }
-.hero-content .reveal-delay-4 { transition-delay: 320ms !important; }
-.hero-content .reveal-delay-5 { transition-delay: 400ms !important; }
+/* Step 3: Hero stagger — 0–400ms (hero fully revealed within 950ms of trigger) */
+.hero-content .reveal                { transition-delay: 0ms   !important; }
+.hero-content .reveal-delay-1        { transition-delay: 80ms  !important; }
+.hero-content .reveal-delay-2        { transition-delay: 160ms !important; }
+.hero-content .reveal-delay-3        { transition-delay: 240ms !important; }
+.hero-content .reveal-delay-4        { transition-delay: 320ms !important; }
+.hero-content .reveal-delay-5        { transition-delay: 400ms !important; }
 
-/* CSS failsafe: if .hero-revealing is present on app-container,
- * hero elements are forced visible regardless of .in class state.
- * This is a belt-and-suspenders guarantee — the JS also adds .in directly. */
+/* Step 4: CSS failsafe — when app-container.hero-revealing, force ALL hero
+ * .reveal elements fully visible regardless of .in class, clip-path, or
+ * any other inherited property. This is architecturally impossible to miss. */
 .hero-revealing .hero-content .reveal {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
+  opacity:    1    !important;
+  transform:  translateY(0) !important;
+  clip-path:  none !important;
+  visibility: visible !important;
 }
