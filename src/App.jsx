@@ -75,9 +75,18 @@ const servicesData = [
 
 function App() {
   const [showIntro, setShowIntro] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   const brandRef = useRef(null);
   const starfieldRef = useStarfield();
-  const threeRef = useThreeBackground();
+
+  const handleBackgroundReady = useCallback(() => {
+    console.log(`[${performance.now().toFixed(1)}ms] Background ready`);
+    console.log(`[${performance.now().toFixed(1)}ms] Hero ready`);
+    console.log(`[${performance.now().toFixed(1)}ms] Send "APP_READY"`);
+    setAppReady(true);
+  }, []);
+
+  const threeRef = useThreeBackground(handleBackgroundReady);
 
   useEffect(() => {
     console.log(`[${performance.now().toFixed(1)}ms] App mounted`);
@@ -313,6 +322,7 @@ function App() {
 
         {showIntro && (
           <CinematicIntro
+            isAppReady={appReady}
             onComplete={() => setShowIntro(false)}
           />
         )}

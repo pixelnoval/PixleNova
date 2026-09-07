@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import mapData from './mapData.json';
 
-export function useThreeBackground() {
+export function useThreeBackground(onReady) {
   const canvasRef = useRef(null);
+  const isReadyNotified = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -892,6 +893,11 @@ export function useThreeBackground() {
       group.rotation.x = mY * 0.12;
 
       renderer.render(scene, camera);
+
+      if (!isReadyNotified.current) {
+        isReadyNotified.current = true;
+        if (onReady) onReady();
+      }
     };
     animate(performance.now());
 

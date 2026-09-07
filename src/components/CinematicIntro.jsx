@@ -10,13 +10,15 @@ import { useEffect, useRef, useState } from 'react';
  * - NO PREMATURE LOGO FADEOUT: The logo does NOT vanish before the overlay fades.
  * - Fallback safety timer ensures unmount even if transitionend is interrupted.
  */
-export default function CinematicIntro({ onComplete }) {
+export default function CinematicIntro({ isAppReady = false, onComplete }) {
   const [isExiting, setIsExiting] = useState(false);
+  const [minDurationElapsed, setMinDurationElapsed] = useState(false);
+  const hasTriggeredExit = useRef(false);
+  const hasCompleted = useRef(false);
   const wrapperRef = useRef(null);
   const iconRef = useRef(null);
   const textRef = useRef(null);
   const taglineRef = useRef(null);
-  const hasCompleted = useRef(false);
 
   const finish = () => {
     if (hasCompleted.current) return;
@@ -50,23 +52,38 @@ export default function CinematicIntro({ onComplete }) {
       taglineRef.current?.classList.add('intro-tagline-visible');
     }, 1100));
 
-    // Step 4: Overlay initiates crossfade exit (Homepage already active underneath!)
-    // Logo remains visible as the overlay dissolves into the homepage
+    // Step 4: Minimum intro duration (2200ms)
     timers.push(setTimeout(() => {
-      console.log(`[${performance.now().toFixed(1)}ms] Intro fade started`);
-      setIsExiting(true); // Triggers CSS opacity 1 -> 0 over 0.8s
+      console.log(`[${performance.now().toFixed(1)}ms] Minimum intro duration reached (2200ms)`);
+      setMinDurationElapsed(true);
     }, 2200));
 
-    // Safety fallback: guaranteed unmount at 3100ms (2200ms + 800ms transition + 100ms buffer)
+    // Safety fallback: if background ever takes too long, force exit at 3500ms
     timers.push(setTimeout(() => {
-      console.log(`[${performance.now().toFixed(1)}ms] Intro fully hidden (timer fallback)`);
-      finish();
-    }, 3100));
+      if (!hasTriggeredExit.current) {
+        console.log(`[${performance.now().toFixed(1)}ms] Fallback safety timer triggered exit`);
+        setIsExiting(true);
+      }
+    }, 3500));
 
     return () => {
       timers.forEach(clearTimeout);
     };
   }, []);
+
+  // When BOTH "APP_READY" is received AND minimum intro duration has passed -> Fade intro
+  useEffect(() => {
+    if (minDurationElapsed && isAppReady && !hasTriggeredExit.current) {
+      hasTriggeredExit.current = true;
+      console.log(`[${performance.now().toFixed(1)}ms] Both APP_READY & minimum intro duration met -> Intro fade started`);
+      setIsExiting(true);
+
+      // Fallback timer for unmount in case transitionend is dropped
+      setTimeout(() => {
+        finish();
+      }, 900); // 800ms transition + 100ms buffer
+    }
+  }, [minDurationElapsed, isAppReady]);
 
   const handleTransitionEnd = (e) => {
     if (e.target === wrapperRef.current && isExiting) {
