@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import mapData from './mapData.json';
 
-export function useThreeBackground(onReady) {
+export function useThreeBackground() {
   const canvasRef = useRef(null);
   const isReadyNotified = useRef(false);
 
@@ -283,10 +283,9 @@ export function useThreeBackground(onReady) {
     // Face the front of the sphere towards Asia/India for balanced geographic framing
     const lonOffset = Math.PI * 0.45;
 
-    // Create a structured, clean geographic point grid.
-    // Moderately increased density to fill interior landmass gaps naturally.
-    const LAT_STEPS = isMobile ? 100 : (isTablet ? 140 : 190);
-    const LON_STEPS = isMobile ? 200 : (isTablet ? 280 : 380);
+    // Optimized density for smooth 60fps initialization without main thread lock
+    const LAT_STEPS = isMobile ? 60 : (isTablet ? 80 : 110);
+    const LON_STEPS = isMobile ? 120 : (isTablet ? 160 : 220);
 
     const colorCoast = new THREE.Color(0x3388ff); // Medium blue/cyan for edge definition
     const colorInterior = new THREE.Color(0x113388); // Deep electric blue for interior structure
@@ -896,7 +895,8 @@ export function useThreeBackground(onReady) {
 
       if (!isReadyNotified.current) {
         isReadyNotified.current = true;
-        if (onReady) onReady();
+        canvas.classList.add('ready');
+        console.log(`[${performance.now().toFixed(1)}ms] Three.js first frame rendered (canvas ready)`);
       }
     };
     animate(performance.now());

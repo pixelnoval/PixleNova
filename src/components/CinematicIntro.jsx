@@ -1,34 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * CinematicIntro — PixelNova Brand Intro Overlay
+ * CinematicIntro — PixelNova Visual Bridge Intro
  *
  * Architecture:
- * - Pure visual overlay above already-mounted homepage (z-index: 99999).
- * - Logo icon, wordmark, and tagline animate in.
- * - At 2.2s, overlay fades smoothly (opacity: 1 -> 0 over 0.8s) while homepage is fully visible underneath.
- * - NO PREMATURE LOGO FADEOUT: The logo does NOT vanish before the overlay fades.
- * - Fallback safety timer ensures unmount even if transitionend is interrupted.
+ * - Visual Bridge overlay matching homepage background.
+ * - Icon appears at 100ms
+ * - Wordmark appears at 700ms
+ * - Tagline appears at 1200ms
+ * - Full brand mark holds until 2400ms
+ * - At 2400ms, smooth 0.8s crossfade into the already-mounted homepage underneath
+ * - At 3300ms, unmounts cleanly
  */
-export default function CinematicIntro({ isAppReady = false, onComplete }) {
+export default function CinematicIntro({ onComplete }) {
   const [isExiting, setIsExiting] = useState(false);
-  const [minDurationElapsed, setMinDurationElapsed] = useState(false);
-  const hasTriggeredExit = useRef(false);
-  const hasCompleted = useRef(false);
   const wrapperRef = useRef(null);
   const iconRef = useRef(null);
   const textRef = useRef(null);
   const taglineRef = useRef(null);
+  const hasCompleted = useRef(false);
 
   const finish = () => {
     if (hasCompleted.current) return;
     hasCompleted.current = true;
-    console.log(`[${performance.now().toFixed(1)}ms] CinematicIntro unmounted`);
+    console.log(`[${performance.now().toFixed(1)}ms] Intro fully removed`);
     if (onComplete) onComplete();
   };
 
   useEffect(() => {
-    console.log(`[${performance.now().toFixed(1)}ms] CinematicIntro mounted`);
+    console.log(`[${performance.now().toFixed(1)}ms] Intro mounted`);
     const timers = [];
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -45,49 +45,33 @@ export default function CinematicIntro({ isAppReady = false, onComplete }) {
     // Step 2: "PIXELNOVA" wordmark reveals
     timers.push(setTimeout(() => {
       textRef.current?.classList.add('intro-text-visible');
-    }, 600));
+    }, 700));
 
     // Step 3: Tagline reveals
     timers.push(setTimeout(() => {
       taglineRef.current?.classList.add('intro-tagline-visible');
-    }, 1100));
+    }, 1200));
 
-    // Step 4: Minimum intro duration (2200ms)
+    // Step 4: Visual Bridge crossfade exit at 2400ms
+    // The homepage and background are already rendered underneath.
+    // The overlay smoothly fades from opacity 1 -> 0 over 0.8s.
     timers.push(setTimeout(() => {
-      console.log(`[${performance.now().toFixed(1)}ms] Minimum intro duration reached (2200ms)`);
-      setMinDurationElapsed(true);
-    }, 2200));
+      console.log(`[${performance.now().toFixed(1)}ms] Intro exit started`);
+      setIsExiting(true);
+    }, 2400));
 
-    // Safety fallback: if background ever takes too long, force exit at 3500ms
+    // Guaranteed unmount safety timer (2400ms + 800ms transition + 100ms buffer)
     timers.push(setTimeout(() => {
-      if (!hasTriggeredExit.current) {
-        console.log(`[${performance.now().toFixed(1)}ms] Fallback safety timer triggered exit`);
-        setIsExiting(true);
-      }
-    }, 3500));
+      finish();
+    }, 3300));
 
     return () => {
       timers.forEach(clearTimeout);
     };
   }, []);
 
-  // When BOTH "APP_READY" is received AND minimum intro duration has passed -> Fade intro
-  useEffect(() => {
-    if (minDurationElapsed && isAppReady && !hasTriggeredExit.current) {
-      hasTriggeredExit.current = true;
-      console.log(`[${performance.now().toFixed(1)}ms] Both APP_READY & minimum intro duration met -> Intro fade started`);
-      setIsExiting(true);
-
-      // Fallback timer for unmount in case transitionend is dropped
-      setTimeout(() => {
-        finish();
-      }, 900); // 800ms transition + 100ms buffer
-    }
-  }, [minDurationElapsed, isAppReady]);
-
   const handleTransitionEnd = (e) => {
     if (e.target === wrapperRef.current && isExiting) {
-      console.log(`[${performance.now().toFixed(1)}ms] Intro fully hidden (transitionend)`);
       finish();
     }
   };

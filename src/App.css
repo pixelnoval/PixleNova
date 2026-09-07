@@ -1,11 +1,17 @@
 :root{--ink:#fff6ed;--ink-dim:#d1d5db;--ink-low:#7d8290;--void:#050b1a;--panel:#081024;--blue:#4f7bff;--blue-soft:#8fb0ff;--gold:#e0b378;--line:rgba(255,255,255,.12);--font-display:'Italiana',serif;--font-body:'Outfit',sans-serif;--font-mono:'JetBrains Mono',monospace}
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-html{scroll-behavior:smooth}html,body{background:var(--void)}
+html{scroll-behavior:smooth}
+html,body,#root,.app-container{min-height:100%;background:var(--void)}
 body{font-family:var(--font-body);font-weight:300;color:var(--ink);overflow-x:hidden;-ms-overflow-style:none;scrollbar-width:none}
 ::-webkit-scrollbar{display:none}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}.reveal,.reveal-section,.reveal-wrapper{opacity:1!important;transform:none!important;transition:none!important}}
-.space-bg,.bg3d,.grid-overlay{position:fixed;inset:0;pointer-events:none}.space-bg{z-index:0;overflow:hidden}.bg3d{z-index:1;overflow:hidden;-webkit-mask-image:radial-gradient(ellipse at center,rgba(0,0,0,.15) 10%,rgba(0,0,0,1) 45%);mask-image:radial-gradient(ellipse at center,rgba(0,0,0,.15) 10%,rgba(0,0,0,1) 45%)}.grid-overlay{z-index:2}
-#starfield,#bg3d-canvas{position:absolute;inset:0;width:100%;height:100%}
+.space-bg,.bg3d,.grid-overlay{position:fixed;inset:0;pointer-events:none}
+.space-bg{z-index:0;overflow:hidden;background:radial-gradient(circle at 60% 40%, rgba(26, 68, 170, 0.14) 0%, rgba(5, 11, 26, 0.7) 50%, var(--void) 100%), var(--void)}
+.bg3d{z-index:1;overflow:hidden;-webkit-mask-image:radial-gradient(ellipse at center,rgba(0,0,0,.15) 10%,rgba(0,0,0,1) 45%);mask-image:radial-gradient(ellipse at center,rgba(0,0,0,.15) 10%,rgba(0,0,0,1) 45%)}
+.grid-overlay{z-index:2}
+#starfield{position:absolute;inset:0;width:100%;height:100%}
+#bg3d-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 0.8s ease-in-out}
+#bg3d-canvas.ready{opacity:1}
 .bg3d-tag{position:fixed;bottom:18px;left:24px;font:11px var(--font-mono);color:var(--ink-low);z-index:1;opacity:0;transition:opacity 1.4s ease .6s}.bg3d-tag.in{opacity:1}
 /* Architectural Line System */
 .arch-lines{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -1974,17 +1980,18 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   margin-top: 2px;
 }
 
-/* --- CINEMATIC INTRO BRAND --- */
+/* --- CINEMATIC INTRO BRAND (VISUAL BRIDGE) --- */
 .cinematic-intro-wrapper {
   position: fixed;
   inset: 0;
-  z-index: 99999;
-  background: var(--void);
+  z-index: 9999;
+  background: radial-gradient(circle at 50% 50%, rgba(26, 68, 170, 0.14) 0%, rgba(5, 11, 26, 0.85) 60%, var(--void) 100%), var(--void);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.8s cubic-bezier(.22, 1, .36, 1);
   will-change: opacity;
+  pointer-events: auto;
 }
 
 .cinematic-intro-wrapper.exiting {
@@ -2076,34 +2083,14 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   }
 }
 
-/* ─── HERO REVEAL — AUTONOMOUS CSS ANIMATION ─────────────────────────
- * The homepage renders immediately under the intro overlay.
- * Hero elements are GUARANTEED VISIBLE (opacity: 1) as a failsafe.
- * A graceful entrance float runs during the intro crossfade window (1.6s - 2.4s).
+/* ─── HERO REVEAL — PERMANENT IMMEDIATE VISIBILITY ─────────────────────────
+ * The hero content is permanently visible (opacity: 1) from frame 0.
+ * It is covered by the visual bridge overlay on initial mount, and seamlessly
+ * emerges as the overlay crossfades. Zero blank gap is architecturally possible.
  */
-@keyframes heroEntranceFade {
-  from {
-    opacity: 0.2;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .hero-content .reveal {
   opacity: 1 !important; 
   clip-path: none !important; 
-  transform: translateY(0);
-  animation: heroEntranceFade 0.8s cubic-bezier(.22, 1, .36, 1) 1.6s backwards;
+  transform: translateY(0) !important;
   transition: none !important; /* Disconnect from standard scroll reveal transitions */
 }
-
-/* Hero stagger delays */
-.hero-content .reveal                { animation-delay: 1.6s  !important; }
-.hero-content .reveal-delay-1        { animation-delay: 1.7s  !important; }
-.hero-content .reveal-delay-2        { animation-delay: 1.8s  !important; }
-.hero-content .reveal-delay-3        { animation-delay: 1.9s  !important; }
-.hero-content .reveal-delay-4        { animation-delay: 2.0s  !important; }
-.hero-content .reveal-delay-5        { animation-delay: 2.1s  !important; }
