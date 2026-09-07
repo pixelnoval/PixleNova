@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ArrowUpRight,
   Menu,
@@ -74,11 +74,10 @@ const servicesData = [
 ];
 
 function App() {
-  const [introState, setIntroState] = useState('PLAYING'); // 'PLAYING', 'BLENDING', 'TEXT_HANDOFF', 'HERO_REVEAL', 'COMPLETE'
-
-  useEffect(() => {
-    if (introState === 'PLAYING') console.log('PLAYING');
-  }, [introState]);
+  // 3-state machine: 'INTRO' → 'TRANSITIONING' → 'COMPLETE'
+  // Initialized as 'INTRO' synchronously so the very first render already has
+  // the overlay covering the homepage — no flash of homepage content.
+  const [introState, setIntroState] = useState('INTRO');
   const brandRef = useRef(null);
   const starfieldRef = useStarfield();
   const threeRef = useThreeBackground();
@@ -119,11 +118,8 @@ function App() {
   }, [isServiceModalOpen]);
 
   useEffect(() => {
-    // Start reveals at HERO_REVEAL so content appears as the intro overlay is fading out
-    // This eliminates the visible gap between intro and homepage
-    if (introState === 'PLAYING' || introState === 'BLENDING') {
-      return;
-    }
+    // Start reveals at TRANSITIONING — hero content appears as intro overlay fades
+    if (introState === 'INTRO') return;
 
     const revealOptions = { rootMargin: '-5% 0px -15% 0px', threshold: 0 };
 
@@ -298,60 +294,34 @@ function App() {
 
 
   useEffect(() => {
-    // Lock scroll while intro overlay is fully opaque (PLAYING or BLENDING)
-    // Release at HERO_REVEAL so the user can scroll as the overlay fades
-    if (introState === 'PLAYING' || introState === 'BLENDING') {
+    // Lock scroll only while the intro overlay is fully opaque
+    // Release at TRANSITIONING so user can interact as overlay fades
+    if (introState === 'INTRO') {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [introState]);
 
-  const handleBlendStart = () => {
-    setIntroState(prev => {
-      if (prev === 'PLAYING') {
-        return 'BLENDING';
-      }
-      return prev;
-    });
-  };
+  // useCallback ensures these functions have stable references across renders.
+  // Without this, every state change would recreate the functions, changing
+  // CinematicIntro's effect dependencies and restarting all timers.
+  const handleTransitionStart = useCallback(() => {
+    setIntroState('TRANSITIONING');
+  }, []);
 
-  const handleTextHandoffStart = () => {
-    setIntroState(prev => {
-      // Accept from PLAYING or BLENDING (robust against tight timing)
-      if (prev === 'PLAYING' || prev === 'BLENDING') {
-        return 'TEXT_HANDOFF';
-      }
-      return prev;
-    });
-  };
-
-  const handleTextHandoffComplete = () => {
-    setIntroState(prev => {
-      if (prev === 'TEXT_HANDOFF' || prev === 'BLENDING' || prev === 'PLAYING') {
-        return 'HERO_REVEAL';
-      }
-      return prev;
-    });
-  };
-
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     setIntroState('COMPLETE');
-  };
+  }, []);
 
   return (
     <>
-      <div className={`app-container ${introState !== 'COMPLETE' ? 'intro-active' : ''} ${introState === 'PLAYING' || introState === 'BLENDING' ? 'hero-intro-pending' : ''}`}>
+      <div className={`app-container${introState !== 'COMPLETE' ? ' intro-active' : ''}`}>
 
         {introState !== 'COMPLETE' && (
           <CinematicIntro
-            brandRef={brandRef}
-            onBlendStart={handleBlendStart}
-            onTextHandoffStart={handleTextHandoffStart}
-            onTextHandoffComplete={handleTextHandoffComplete}
+            onTransitionStart={handleTransitionStart}
             onComplete={handleComplete}
           />
         )}
