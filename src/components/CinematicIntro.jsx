@@ -6,83 +6,97 @@ import { useEffect, useRef, useState } from 'react';
  * Architecture:
  * - Uses a `started` ref to guarantee timers fire exactly ONCE,
  *   even in React StrictMode (which mounts→unmounts→remounts in dev).
- * - All callbacks are called once via the ref guard.
  * - The overlay is always fully opaque on mount (no flash).
  *
- * Timeline:
- *   0.10s  – Icon fades in
- *   0.70s  – Brand name reveals
- *   1.20s  – Tagline appears
- *   1.60s  – onBlendStart (globe timeline starts in useThreeBackground)
- *   2.60s  – Brand elements begin fading
- *   2.80s  – onTransitionStart: homepage reveals begin, overlay fades (1.2s CSS)
- *   4.00s  – onComplete: intro unmounts (CSS fade done)
+ * Timeline (production):
+ *   0.10s  – Icon fades in (scale 0.92→1, opacity 0→1)
+ *   0.80s  – Brand name reveals (translateY + letter-spacing)
+ *   1.40s  – Tagline appears (gold, opacity + translateY)
+ *
+ *   1.80s  – *** onTransitionStart fires ***
+ *            Homepage reveals begin (1.2–1.8s transitions start NOW)
+ *            Hero is fully visible by ~3.5s
+ *
+ *   3.20s  – Brand composition starts fading (icon, name, tagline)
+ *   3.60s  – Overlay begins CSS fade-out (1.2s → opacity 0)
+ *            At this point hero is ALREADY fully visible underneath.
+ *
+ *   4.80s  – onComplete fires, intro unmounts cleanly.
+ *
+ * The key insight: onTransitionStart must fire 1.8s BEFORE the overlay
+ * starts fading, so hero content is already fully revealed when the
+ * overlay becomes transparent. This eliminates the blank-screen gap.
  */
 export default function CinematicIntro({ onTransitionStart, onComplete }) {
-  const wrapperRef = useRef(null);
-  const iconRef   = useRef(null);
-  const textRef   = useRef(null);
-  const taglineRef = useRef(null);
+  const wrapperRef  = useRef(null);
+  const iconRef     = useRef(null);
+  const textRef     = useRef(null);
+  const taglineRef  = useRef(null);
 
-  // Guard: ensures the animation sequence starts exactly once,
-  // even under React StrictMode double-invocation.
+  // Guard: ensures sequence starts exactly once (StrictMode-safe)
   const started = useRef(false);
 
-  // Controls the wrapper's CSS fade-out class
+  // Triggers the CSS fade-out class on the wrapper
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    // Strictly once — ignore the StrictMode cleanup+re-run cycle
     if (started.current) return;
     started.current = true;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
-      // Skip animation — immediately transition and complete
       if (onTransitionStart) onTransitionStart();
       setFading(true);
-      const t = setTimeout(() => { if (onComplete) onComplete(); }, 400);
+      const t = setTimeout(() => { if (onComplete) onComplete(); }, 300);
       return () => clearTimeout(t);
     }
 
     const timers = [];
     const after = (ms, fn) => { const id = setTimeout(fn, ms); timers.push(id); };
 
-    // Phase 1 — icon reveal
+    // ── BRAND REVEAL ────────────────────────────────────────────────
+    // Phase 1: icon scales in
     after(100, () => {
       if (iconRef.current) iconRef.current.classList.add('intro-icon-visible');
     });
 
-    // Phase 2 — brand name reveal
-    after(700, () => {
+    // Phase 2: PIXELNOVA wordmark
+    after(800, () => {
       if (textRef.current) textRef.current.classList.add('intro-text-visible');
     });
 
-    // Phase 3 — tagline reveal
-    after(1200, () => {
+    // Phase 3: tagline
+    after(1400, () => {
       if (taglineRef.current) taglineRef.current.classList.add('intro-tagline-visible');
     });
 
-    // Phase 5 — begin exit: brand composition fades
-    after(2600, () => {
+    // ── HOMEPAGE PRE-REVEAL ─────────────────────────────────────────
+    // Phase 4: signal App to start hero reveals NOW — 1.8s before overlay fades.
+    // The hero's longest reveal (1.2s transition + 0.6s delay = 1.8s) will be
+    // COMPLETE by the time the overlay reaches opacity:0.
+    after(1800, () => {
+      if (onTransitionStart) onTransitionStart();
+    });
+
+    // ── BRAND EXIT ──────────────────────────────────────────────────
+    // Phase 5: brand composition fades while homepage is revealing underneath
+    after(3200, () => {
       if (iconRef.current)    iconRef.current.classList.add('intro-fadeout');
       if (textRef.current)    textRef.current.classList.add('intro-fadeout');
       if (taglineRef.current) taglineRef.current.classList.add('intro-fadeout');
     });
 
-    // Phase 6 — simultaneously: start overlay CSS fade + signal homepage to reveal
-    after(2800, () => {
-      if (onTransitionStart) onTransitionStart(); // App sets state → hero reveals start
-      setFading(true);                            // overlay opacity: 1 → 0 (1.2s CSS)
+    // Phase 6: overlay starts fading. Hero is already fully visible at this point.
+    after(3600, () => {
+      setFading(true); // CSS: opacity 1 → 0 over 1.2s
     });
 
-    // Phase 7 — unmount after CSS transition completes (2800 + 1200 = 4000ms)
-    after(4000, () => {
+    // Phase 7: unmount once CSS transition is done (3600 + 1200 = 4800ms)
+    after(4800, () => {
       if (onComplete) onComplete();
     });
 
     return () => timers.forEach(clearTimeout);
-    // Empty deps — runs once on first real mount only (started ref guards re-runs)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
