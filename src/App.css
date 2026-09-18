@@ -1980,6 +1980,13 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   margin-top: 2px;
 }
 
+/* --- HOMEPAGE WRAPPER --- */
+.homepage {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
 /* --- CINEMATIC INTRO BRAND (VISUAL BRIDGE) --- */
 .cinematic-intro-wrapper {
   position: fixed;
@@ -1989,7 +1996,7 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.8s cubic-bezier(.22, 1, .36, 1);
+  transition: opacity 1.0s cubic-bezier(.22, 1, .36, 1);
   will-change: opacity;
   pointer-events: auto;
 }

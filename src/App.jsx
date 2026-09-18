@@ -311,72 +311,65 @@ function App() {
     <>
       <div className="app-container">
 
-        {showIntro && (
-          <CinematicIntro
-            onComplete={() => setShowIntro(false)}
-          />
-        )}
-
-        {/* Hero background and ambient effects are ALWAYS mounted and NOT hidden. */}
-        <div className="space-bg">
-          <canvas id="starfield" ref={starfieldRef}></canvas>
-        </div>
-
-        <div className="bg3d">
-          <canvas id="bg3d-canvas" ref={threeRef}></canvas>
-        </div>
-
-        <div className="arch-lines" style={{ opacity: 0.5 }}>
-          <div className="arch-v" style={{ left: '8%', top: '10vh', height: '60vh' }}></div>
-          <div className="arch-v" style={{ right: '12%', top: '0', height: '40vh' }}></div>
-          <div className="arch-h" style={{ top: '120px', left: '0', width: '20vw' }}></div>
-        </div>
-
-        <header className="nav">
-          <div className="nav-inner">
-            <a href="#home" className="brand-logo" ref={brandRef} onClick={(e) => handleNavClick(e, 'home')}>
-              <img src="/pixelnova-logo-navbar.png" alt="PixelNova Icon" className="navbar-brand-icon" />
-              <span>PIXELNOVA</span>
-            </a>
-            <nav className="links">
-              <a href="#services" className={activeSection === 'services' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'services')}>Services</a>
-              <a href="#work" className={activeSection === 'work' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'work')}>Work</a>
-              <a href="#process" className={activeSection === 'process' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'process')}>Process</a>
-              <a href="#contact" className={activeSection === 'contact' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'contact')}>Let’s Connect</a>
-            </nav>
-            <a href="#contact" className="nav-cta" onClick={(e) => handleNavClick(e, 'contact')}>
-              Start a project <ArrowUpRight size={14} />
-            </a>
-            <button className="menu-toggle" id="menuToggle" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
-              <Menu />
-            </button>
+        <main className="homepage">
+          {/* Hero background and ambient effects are ALWAYS mounted and NOT hidden. */}
+          <div className="space-bg">
+            <canvas id="starfield" ref={starfieldRef}></canvas>
           </div>
-        </header>
 
-        <div className={`menu-backdrop ${menuOpen ? 'open' : ''}`} id="menuBackdrop" onClick={closeMenu}></div>
-        <div className={`mobile-menu ${menuOpen ? 'open' : ''}`} id="mobileMenu">
-          <a href="#services" className={activeSection === 'services' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'services')}>Services</a>
-          <a href="#work" className={activeSection === 'work' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'work')}>Work</a>
-          <a href="#process" className={activeSection === 'process' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'process')}>Process</a>
-          <a href="#contact" className={activeSection === 'contact' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'contact')}>Let’s Connect</a>
-        </div>
+          <div className="bg3d">
+            <canvas id="bg3d-canvas" ref={threeRef}></canvas>
+          </div>
 
-        <main>
+          <div className="arch-lines" style={{ opacity: 0.5 }}>
+            <div className="arch-v" style={{ left: '8%', top: '10vh', height: '60vh' }}></div>
+            <div className="arch-v" style={{ right: '12%', top: '0', height: '40vh' }}></div>
+            <div className="arch-h" style={{ top: '120px', left: '0', width: '20vw' }}></div>
+          </div>
+
+          <header className="nav">
+            <div className="nav-inner">
+              <a href="#home" className="brand-logo" ref={brandRef} onClick={(e) => handleNavClick(e, 'home')}>
+                <img src="/pixelnova-logo-navbar.png" alt="PixelNova Icon" className="navbar-brand-icon" />
+                <span>PIXELNOVA</span>
+              </a>
+              <nav className="links">
+                <a href="#services" className={activeSection === 'services' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'services')}>Services</a>
+                <a href="#work" className={activeSection === 'work' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'work')}>Work</a>
+                <a href="#process" className={activeSection === 'process' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'process')}>Process</a>
+                <a href="#contact" className={activeSection === 'contact' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'contact')}>Let’s Connect</a>
+              </nav>
+              <a href="#contact" className="nav-cta" onClick={(e) => handleNavClick(e, 'contact')}>
+                Start a project <ArrowUpRight size={14} />
+              </a>
+              <button className="menu-toggle" id="menuToggle" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+                <Menu />
+              </button>
+            </div>
+          </header>
+
+          <div className={`menu-backdrop ${menuOpen ? 'open' : ''}`} id="menuBackdrop" onClick={closeMenu}></div>
+          <div className={`mobile-menu ${menuOpen ? 'open' : ''}`} id="mobileMenu">
+            <a href="#services" className={activeSection === 'services' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'services')}>Services</a>
+            <a href="#work" className={activeSection === 'work' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'work')}>Work</a>
+            <a href="#process" className={activeSection === 'process' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'process')}>Process</a>
+            <a href="#contact" className={activeSection === 'contact' ? 'active' : ''} onClick={(e) => handleNavClick(e, 'contact')}>Let’s Connect</a>
+          </div>
+
           <section className="hero" id="home">
             <div className="wrap">
               <div className="hero-grid">
                 <div className="hero-content">
-                  <img src="/pixelnova-logo-icon.png" alt="PixelNova Icon" className="hero-brand-icon reveal" />
-                  <span className="eyebrow reveal">Digital solutions + creative media</span>
+                  <span className="eyebrow">Digital solutions + creative media</span>
                   <h1 className="hero-title">
-                    <span className="reveal reveal-delay-1" style={{ display: 'block' }}>We Create</span>
-                    <span className="reveal reveal-delay-2" style={{ display: 'block' }}>We Grow</span>
+                    <span style={{ display: 'block' }}>We Create</span>
+                    <span style={{ display: 'block' }}>We Grow</span>
                   </h1>
-                  <div className="hero-sub-line reveal reveal-delay-3">We Make Your Brand Stand Out.</div>
-                  <p className="hero-desc reveal reveal-delay-4">
+                  <div className="hero-sub-line">We Make Your Brand Stand Out.</div>
+                  <p className="hero-desc">
                     PixleNova combines web development, digital marketing, social media, branding and cinematic content to turn ideas into memorable digital experiences.
                   </p>
-                  <div className="hero-btns reveal reveal-delay-5">
+                  <div className="hero-btns">
                     <a href="#contact" className="btn btn-primary" onClick={(e) => handleNavClick(e, 'contact')}>Build with us <ArrowUpRight size={15} /></a>
                     <a href="#work" className="btn btn-ghost" onClick={(e) => handleNavClick(e, 'work')}>Discover work <MoveDown size={15} /></a>
                   </div>
@@ -826,7 +819,6 @@ function App() {
               </div>
             </div>
           </section>
-        </main>
 
         <footer>
           <div className="wrap">
@@ -985,6 +977,13 @@ function App() {
             )}
           </div>
         </div>
+        </main>
+
+        {showIntro && (
+          <CinematicIntro
+            onComplete={() => setShowIntro(false)}
+          />
+        )}
       </div>
     </>
   );

@@ -4,13 +4,17 @@ import { useEffect, useRef, useState } from 'react';
  * CinematicIntro — PixelNova Visual Bridge Intro
  *
  * Architecture:
- * - Visual Bridge overlay matching homepage background.
- * - Icon appears at 100ms
- * - Wordmark appears at 700ms
- * - Tagline appears at 1200ms
- * - Full brand mark holds until 2400ms
- * - At 2400ms, smooth 0.8s crossfade into the already-mounted homepage underneath
- * - At 3300ms, unmounts cleanly
+ * - Pure visual overlay positioned above the already-mounted homepage (z-index: 9999).
+ * - Timeline:
+ *   0–100ms: Official PixelNova icon appears.
+ *   ~700ms: PIXELNOVA wordmark appears.
+ *   ~1200ms: YOUR BUSINESS, ACCELERATED tagline appears.
+ *   1200–3800ms: Complete brand composition holds.
+ *   3800–4800ms: Entire intro overlay smoothly fades out (opacity: 1 -> 0 over 1.0s).
+ *   ~4900ms: Clean unmount.
+ *
+ * The homepage DOM and CSS background exist underneath from frame 0.
+ * There is ZERO blank interval between intro and homepage.
  */
 export default function CinematicIntro({ onComplete }) {
   const [isExiting, setIsExiting] = useState(false);
@@ -23,12 +27,10 @@ export default function CinematicIntro({ onComplete }) {
   const finish = () => {
     if (hasCompleted.current) return;
     hasCompleted.current = true;
-    console.log(`[${performance.now().toFixed(1)}ms] Intro fully removed`);
     if (onComplete) onComplete();
   };
 
   useEffect(() => {
-    console.log(`[${performance.now().toFixed(1)}ms] Intro mounted`);
     const timers = [];
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -52,18 +54,17 @@ export default function CinematicIntro({ onComplete }) {
       taglineRef.current?.classList.add('intro-tagline-visible');
     }, 1200));
 
-    // Step 4: Visual Bridge crossfade exit at 2400ms
-    // The homepage and background are already rendered underneath.
-    // The overlay smoothly fades from opacity 1 -> 0 over 0.8s.
+    // Step 4: Overlay initiates smooth crossfade exit at 3800ms
+    // The homepage is already rendered and active underneath.
+    // The overlay fades opacity 1 -> 0 over 1.0s (3800ms to 4800ms).
     timers.push(setTimeout(() => {
-      console.log(`[${performance.now().toFixed(1)}ms] Intro exit started`);
       setIsExiting(true);
-    }, 2400));
+    }, 3800));
 
-    // Guaranteed unmount safety timer (2400ms + 800ms transition + 100ms buffer)
+    // Guaranteed unmount safety timer at 4900ms (3800ms + 1000ms transition + 100ms buffer)
     timers.push(setTimeout(() => {
       finish();
-    }, 3300));
+    }, 4900));
 
     return () => {
       timers.forEach(clearTimeout);

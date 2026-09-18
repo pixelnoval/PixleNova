@@ -10,14 +10,40 @@ export function useThreeBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    console.log(`[${performance.now().toFixed(1)}ms] Background initialization started`);
+    let cleanupFn = null;
+    let cancelled = false;
 
-    // ─── RENDERER ────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Non-blocking: Allow React/DOM/CSS to paint the homepage first
+    const initFrame = requestAnimationFrame(() => {
+      if (cancelled) return;
+      try {
+        cleanupFn = initThree(canvas, isReadyNotified);
+      } catch (err) {
+        console.warn('WebGL initialization failed, CSS fallback active', err);
+      }
+    });
 
-    console.log(`[${performance.now().toFixed(1)}ms] Background initialized`);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(initFrame);
+      if (cleanupFn) cleanupFn();
+    };
+  }, []);
+
+  return canvasRef;
+}
+
+function initThree(canvas, isReadyNotified) {
+  // ─── RENDERER ────────────────────────────────────────────────────────────
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  } catch (err) {
+    console.warn('WebGLRenderer creation failed, CSS fallback active', err);
+    return () => {};
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
     // ─── SCENE + CAMERA ──────────────────────────────────────────────────────
     const scene = new THREE.Scene();
@@ -942,7 +968,4 @@ export function useThreeBackground() {
       toDispose.forEach(obj => obj.dispose());
       renderer.dispose();
     };
-  }, []);
-
-  return canvasRef;
 }
