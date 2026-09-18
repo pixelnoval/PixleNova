@@ -367,7 +367,7 @@ function App() {
                   </h1>
                   <div className="hero-sub-line">We Make Your Brand Stand Out.</div>
                   <p className="hero-desc">
-                    PixleNova combines web development, digital marketing, social media, branding and cinematic content to turn ideas into memorable digital experiences.
+                    PixelNova combines web development, digital marketing, social media, branding and cinematic content to turn ideas into memorable digital experiences.
                   </p>
                   <div className="hero-btns">
                     <a href="#contact" className="btn btn-primary" onClick={(e) => handleNavClick(e, 'contact')}>Build with us <ArrowUpRight size={15} /></a>
@@ -388,7 +388,7 @@ function App() {
               <div className="sec-head">
                 <span className="eyebrow reveal">01 / What we do</span>
                 <h2 className="reveal reveal-delay-1">Creative thinking.<br />Digital execution.</h2>
-                <p className="reveal reveal-delay-2">From your first idea to the final campaign, PixleNova brings strategy, design, technology and production together under one roof.</p>
+                <p className="reveal reveal-delay-2">From your first idea to the final campaign, PixelNova brings strategy, design, technology and production together under one roof.</p>
               </div>
               <div className="services-grid">
                 {servicesData.map((svc, idx) => (
@@ -425,7 +425,7 @@ function App() {
               </div>
               <div className="why-wrap">
                 <div className="why-side">
-                  <span className="eyebrow reveal">02 / Why PixleNova</span>
+                  <span className="eyebrow reveal">02 / Why PixelNova</span>
                   <h2 className="reveal reveal-delay-1" style={{ fontSize: 'clamp(34px,4.6vw,58px)', marginTop: '18px' }}>One team.<br />Many possibilities.</h2>
                   <p className="reveal reveal-delay-2">We don't just deliver a website, poster or video. We build a consistent brand system designed to look premium, communicate clearly and grow with your business.</p>
                 </div>
@@ -853,7 +853,7 @@ function App() {
               </div>
             </div>
             <div className="footer-bottom">
-              <p>© <span id="year">{new Date().getFullYear()}</span> PixleNova. All rights reserved.</p>
+              <p>© <span id="year">{new Date().getFullYear()}</span> PixelNova. All rights reserved.</p>
               <span className="tagline-strip">DIGITAL CREATIVITY. POWERFUL RESULTS.</span>
             </div>
           </div>

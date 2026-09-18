@@ -140,7 +140,7 @@ export default function EnquiryDetailPage() {
               </div>
               <div className="a-card__reply-cta">
                 <a
-                  href={`mailto:${contact.email}?subject=Re: Your enquiry to PixleNova`}
+                  href={`mailto:${contact.email}?subject=Re: Your enquiry to PixelNova`}
                   className="a-btn a-btn--primary"
                 >
                   Reply via Email

@@ -80,7 +80,7 @@ export default function LoginPage() {
         </form>
 
         <p className="a-login-footer">
-          PixleNova Admin — access restricted
+          PixelNova Admin — access restricted
         </p>
       </div>
     </div>
