@@ -1,7 +1,7 @@
 {
   "name": "pixlenova-backend",
   "version": "1.0.0",
-  "description": "PixleNova backend API — contact management + admin authentication",
+  "description": "PixelNova backend API — contact management + admin authentication",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

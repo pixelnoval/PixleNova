@@ -66,7 +66,7 @@ export async function sendEnquiryNotification(contact) {
           <p style="margin:0;font-size:15px;color:#374151;line-height:1.7;white-space:pre-wrap">${escapeHtml(contact.message)}</p>
         </div>
         <div style="margin-top:24px;text-align:center">
-          <a href="mailto:${escapeHtml(contact.email)}?subject=Re: Your enquiry to PixleNova"
+          <a href="mailto:${escapeHtml(contact.email)}?subject=Re: Your enquiry to PixelNova"
              style="display:inline-block;background:#050b1a;color:#fff;padding:12px 28px;border-radius:24px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:1px">
             Reply to ${escapeHtml(contact.name)}
           </a>
@@ -74,7 +74,7 @@ export async function sendEnquiryNotification(contact) {
       </div>
       <div style="background:#f1f3f8;padding:16px 32px;text-align:center">
         <p style="margin:0;font-size:12px;color:#9ca3af">
-          Enquiry ID: ${contact.id} — PixleNova Backend
+          Enquiry ID: ${contact.id} — PixelNova Backend
         </p>
       </div>
     </div>
@@ -84,7 +84,7 @@ export async function sendEnquiryNotification(contact) {
     await getTransporter().sendMail({
       from,
       to: adminEmail,
-      subject: `[PixleNova] New enquiry from ${contact.name}`,
+      subject: `[PixelNova] New enquiry from ${contact.name}`,
       text: `New enquiry from ${contact.name} (${contact.email})\n\n${contact.message}\n\nReceived: ${receivedAt}`,
       html,
     });
@@ -115,16 +115,16 @@ export async function sendAcknowledgement(contact) {
       <div style="background:#f8f9fc;padding:40px 32px">
         <p style="margin:0 0 16px;font-size:16px;color:#111827">Hi ${escapeHtml(contact.name)},</p>
         <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.7">
-          Thank you for reaching out to PixleNova.
+          Thank you for reaching out to PixelNova.
           We've received your enquiry and will review it shortly.
         </p>
         <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.7">
           We'll be in touch soon.
         </p>
-        <p style="margin:24px 0 0;font-size:14px;color:#6b7280">The PixleNova Team</p>
+        <p style="margin:24px 0 0;font-size:14px;color:#6b7280">The PixelNova Team</p>
       </div>
       <div style="background:#f1f3f8;padding:16px 32px;text-align:center">
-        <p style="margin:0;font-size:12px;color:#9ca3af">PixleNova — Digital Creativity</p>
+        <p style="margin:0;font-size:12px;color:#9ca3af">PixelNova — Digital Creativity</p>
       </div>
     </div>
   `;
@@ -133,8 +133,8 @@ export async function sendAcknowledgement(contact) {
     await getTransporter().sendMail({
       from,
       to: contact.email,
-      subject: 'We received your enquiry — PixleNova',
-      text: `Hi ${contact.name},\n\nThank you for reaching out to PixleNova. We've received your enquiry and will review it shortly.\n\nThe PixleNova Team`,
+      subject: 'We received your enquiry — PixelNova',
+      text: `Hi ${contact.name},\n\nThank you for reaching out to PixelNova. We've received your enquiry and will review it shortly.\n\nThe PixelNova Team`,
       html,
     });
   } catch (err) {

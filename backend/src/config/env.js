@@ -27,7 +27,7 @@ export const env = {
     secure: process.env.EMAIL_SECURE === 'true',
     user: process.env.EMAIL_USER || '',
     password: process.env.EMAIL_PASSWORD || '',
-    from: process.env.EMAIL_FROM || '"PixleNova" <no-reply@pixlenova.com>',
+    from: process.env.EMAIL_FROM || '"PixelNova" <no-reply@pixlenova.com>',
     adminEmail: process.env.ADMIN_EMAIL || '',
   },
 };

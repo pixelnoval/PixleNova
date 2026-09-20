@@ -1871,7 +1871,7 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   opacity: 1 !important;
 }
 
-/* Why PixleNova specific glow override for click */
+/* Why PixelNova specific glow override for click */
 .is-activating.why-item::before {
   opacity: 1 !important;
   filter: blur(12px) !important;

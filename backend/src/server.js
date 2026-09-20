@@ -43,7 +43,7 @@ app.get('/api/health', async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({
       success: true,
-      message: 'PixleNova API is running',
+      message: 'PixelNova API is running',
       database: 'connected',
       timestamp: new Date().toISOString(),
     });
@@ -51,7 +51,7 @@ app.get('/api/health', async (req, res) => {
     // Server is up but DB not reachable
     res.status(503).json({
       success: false,
-      message: 'PixleNova API is running — database unavailable',
+      message: 'PixelNova API is running — database unavailable',
       database: 'disconnected',
     });
   }
@@ -80,7 +80,7 @@ async function start() {
   }
 
   app.listen(env.port, () => {
-    console.log(`🚀  PixleNova API running on port ${env.port} [${env.nodeEnv}]`);
+    console.log(`🚀  PixelNova API running on port ${env.port} [${env.nodeEnv}]`);
     console.log(`    CORS origin: ${env.frontendUrl}`);
   });
 }

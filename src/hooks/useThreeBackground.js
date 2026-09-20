@@ -806,7 +806,7 @@ function initThree(canvas, isReadyNotified) {
       const introT = (time - introTimeline.startTime) / 1000;
       const isIntroComplete = introT > 4.5 || introTimeline.prefersReducedMotion;
 
-      // Phase 1/2 (0.0 to 1.5s): Dark Open & PixleNova Identity
+      // Phase 1/2 (0.0 to 1.5s): Dark Open & PixelNova Identity
       // Phase 3 (1.5 to 3.5s): Globe Reveal
       // Phase 4 (3.5 to 5.0s): Orbit Reveal
       // Phase 5 (5.0s+): Hero Text Reveal

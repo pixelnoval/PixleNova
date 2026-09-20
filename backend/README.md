@@ -1,6 +1,6 @@
-# PixleNova Backend
+# PixelNova Backend
 
-Production-ready Express + PostgreSQL + Prisma backend for the PixleNova digital agency website.
+Production-ready Express + PostgreSQL + Prisma backend for the PixelNova digital agency website.
 
 ---
 
