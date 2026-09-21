@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "pixlenova"
-  }
+  },
+  "targets": {
+    "pixlenova": {
+      "hosting": {
+        "pixelnovaofficial": [
+          "pixelnovaofficial"
+        ],
+        "pixlenova": [
+          "pixlenova"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
