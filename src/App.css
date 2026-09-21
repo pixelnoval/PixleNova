@@ -2112,6 +2112,8 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
 /* ── Wrapper that holds form + success state in same space ── */
 .form-panel-wrapper {
   position: relative;
+  /* min-height keeps the wrapper from collapsing when the form fades to opacity:0 */
+  min-height: 400px;
 }
 
 /* ── The success state itself ──────────────────────────────── */
@@ -2123,21 +2125,24 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   align-items: center;
   justify-content: center;
   gap: 0;
-  /* Invisible until visible prop is true */
+  /* Invisible until cs-visible is applied */
   opacity: 0;
   pointer-events: none;
-  /* Delayed entrance — gives the form time to fade out first */
+  /* Delayed entrance — gives the form 200ms to fade out first */
   transition: opacity 0.4s ease 0.2s;
   padding: 48px 32px;
   border: 1px solid var(--line);
-  background: rgba(3, 8, 24, 0.4);
-  backdrop-filter: blur(10px);
+  background: rgba(3, 8, 24, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 4px;
-  overflow: hidden;
+  /* z-index above the faded form */
+  z-index: 2;
 }
 
 .contact-success-state.cs-visible {
   opacity: 1;
+
   pointer-events: auto;
 }
 

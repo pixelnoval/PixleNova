@@ -819,10 +819,12 @@ function App() {
                   </div>
                 </div>
                 {/* form-panel-wrapper: relative container so ContactSuccessState
-                    can be absolutely positioned over the form */}
-                <div className="form-panel-wrapper reveal contact-anim-5">
+                    can be absolutely positioned over the form.
+                    NOTE: reveal/clip-path must NOT be on this wrapper — the
+                    clip-path would crop the absolutely-positioned child. */}
+                <div className="form-panel-wrapper">
                   <form
-                    className="form-panel"
+                    className="form-panel reveal contact-anim-5"
                     id="contactForm"
                     onSubmit={handleFormSubmit}
                     style={{
@@ -858,15 +860,17 @@ function App() {
                         <>START A CONVERSATION <ArrowUpRight className="contact-submit-arrow" size={15} style={{ marginLeft: '4px', transition: 'transform 0.3s ease' }} /></>
                       )}
                     </button>
-                    {formNote && (
+                    {/* Only show formNote for errors — never show it alongside the
+                        cinematic success state */}
+                    {formNote && !submittedOk && (
                       <p key={formNote} className="form-note animate-in" id="formNote" style={{ color: formNoteColor }}>
                         {formNote}
                       </p>
                     )}
                   </form>
 
-                  {/* Success state: overlaid on the form panel, only activates
-                      after a confirmed successful API response */}
+                  {/* Success state: absolutely overlays the form panel.
+                      Only activates after confirmed successful API response. */}
                   <ContactSuccessState visible={submittedOk} />
                 </div>
               </div>
