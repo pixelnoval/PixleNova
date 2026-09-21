@@ -21,9 +21,28 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  env.frontendUrl,
+  'https://pixelnovaofficial.web.app',
+  'https://pixelnovaofficial.firebaseapp.com',
+  'https://pixlenova.web.app',
+  'https://pixlenova.firebaseapp.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        // Explicitly echo the matched origin so the browser receives the exact
+        // requesting origin string — required when credentials: true is set.
+        return callback(null, origin);
+      }
+      return callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -81,7 +100,8 @@ async function start() {
 
   app.listen(env.port, () => {
     console.log(`🚀  PixelNova API running on port ${env.port} [${env.nodeEnv}]`);
-    console.log(`    CORS origin: ${env.frontendUrl}`);
+    console.log(`    CORS allowed origins:\n${allowedOrigins.map(o => `      • ${o}`).join('\n')}`);
+
   });
 }
 
