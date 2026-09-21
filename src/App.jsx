@@ -19,6 +19,7 @@ import './App.css';
 import { useStarfield } from './hooks/useStarfield';
 import { useThreeBackground } from './hooks/useThreeBackground';
 import CinematicIntro from './components/CinematicIntro';
+import ContactSuccessState from './components/ContactSuccessState';
 import svcWeb from './assets/services/svc-web.jpg';
 import svcMarketing from './assets/services/svc-marketing.jpg';
 import svcMedia from './assets/services/svc-media.jpg';
@@ -94,6 +95,8 @@ function App() {
   const [formNote, setFormNote] = useState('Your enquiry stays confidential.');
   const [formNoteColor, setFormNoteColor] = useState('var(--ink-low)');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedOk, setSubmittedOk] = useState(false);
+  const resetTimerRef = useRef(null);
 
   // Service Modal State
   const [selectedService, setSelectedService] = useState(null);
@@ -271,30 +274,59 @@ function App() {
       message: form.projectDetails.value,
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
       const response = await fetch(`${apiUrl}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+        signal: controller.signal,
       });
-      const result = await response.json();
+
+      let result = null;
+      try {
+        result = await response.json();
+      } catch {
+        // Non-JSON response (e.g. proxy 502/503)
+      }
 
       if (!response.ok) {
-        setFormNote(result.message || 'Something went wrong. Please try again.');
+        setFormNote(result?.message || `Server error (${response.status}). Please try again.`);
         setFormNoteColor('rgba(255,100,100,0.9)');
       } else {
-        setFormNote(result.message || 'Enquiry received. We\'ll be in touch soon.');
-        setFormNoteColor('var(--blue-soft)');
-        form.reset();
+        // ── SUCCESS: show cinematic success state ──────────────────────────────
+        setSubmittedOk(true);
+        // Defer reset so the user can fully see the success confirmation first.
+        // The timer is stored in a ref so it can be cleaned up if the component
+        // unmounts before the delay fires.
+        if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = setTimeout(() => {
+          form.reset();
+          resetTimerRef.current = null;
+        }, 2200);
       }
-    } catch {
-      setFormNote('Unable to send your enquiry. Please check your connection and try again.');
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setFormNote('Server took too long to respond. The backend may be starting up — please try again.');
+      } else {
+        setFormNote(err.message || 'Unable to send your enquiry. Please check your connection and try again.');
+      }
       setFormNoteColor('rgba(255,100,100,0.9)');
     } finally {
+      clearTimeout(timeoutId);
       setIsSubmitting(false);
     }
   };
+
+  // Clean up deferred reset timer on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -786,36 +818,57 @@ function App() {
                     <a className="soc-ic" href="#" aria-label="LinkedIn"><Linkedin /></a>
                   </div>
                 </div>
-                <form className="form-panel reveal contact-anim-5" id="contactForm" onSubmit={handleFormSubmit}>
-                  <div className="form-row">
-                    <div className="contact-field">
-                      <label className="contact-label">Name</label>
-                      <input className="contact-input" required name="name" placeholder="Your name" />
+                {/* form-panel-wrapper: relative container so ContactSuccessState
+                    can be absolutely positioned over the form */}
+                <div className="form-panel-wrapper reveal contact-anim-5">
+                  <form
+                    className="form-panel"
+                    id="contactForm"
+                    onSubmit={handleFormSubmit}
+                    style={{
+                      opacity: submittedOk ? 0 : 1,
+                      pointerEvents: submittedOk ? 'none' : 'auto',
+                      transition: 'opacity 0.35s ease',
+                    }}
+                  >
+                    <div className="form-row">
+                      <div className="contact-field">
+                        <label className="contact-label">Name</label>
+                        <input className="contact-input" required name="name" placeholder="Your name" />
+                      </div>
+                      <div className="contact-field">
+                        <label className="contact-label">Phone</label>
+                        <input className="contact-input" required name="phone" placeholder="+91" />
+                      </div>
                     </div>
                     <div className="contact-field">
-                      <label className="contact-label">Phone</label>
-                      <input className="contact-input" required name="phone" placeholder="+91" />
+                      <label className="contact-label">Email</label>
+                      <input className="contact-input" required type="email" name="email" placeholder="you@example.com" />
                     </div>
-                  </div>
-                  <div className="contact-field">
-                    <label className="contact-label">Email</label>
-                    <input className="contact-input" required type="email" name="email" placeholder="you@example.com" />
-                  </div>
-                  <div className="contact-field">
-                    <label className="contact-label">Project details</label>
-                    <textarea className="contact-textarea" required name="projectDetails" placeholder="Tell us what you need..."></textarea>
-                  </div>
-                  <button className="btn btn-primary submit-btn contact-submit" type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'SUBMITTING...' : (
-                      <>START A CONVERSATION <ArrowUpRight className="contact-submit-arrow" size={15} style={{ marginLeft: '4px', transition: 'transform 0.3s ease' }} /></>
+                    <div className="contact-field">
+                      <label className="contact-label">Project details</label>
+                      <textarea className="contact-textarea" required name="projectDetails" placeholder="Tell us what you need..."></textarea>
+                    </div>
+                    <button
+                      className="btn btn-primary submit-btn contact-submit"
+                      type="submit"
+                      disabled={isSubmitting || submittedOk}
+                    >
+                      {isSubmitting ? 'SUBMITTING...' : (
+                        <>START A CONVERSATION <ArrowUpRight className="contact-submit-arrow" size={15} style={{ marginLeft: '4px', transition: 'transform 0.3s ease' }} /></>
+                      )}
+                    </button>
+                    {formNote && (
+                      <p key={formNote} className="form-note animate-in" id="formNote" style={{ color: formNoteColor }}>
+                        {formNote}
+                      </p>
                     )}
-                  </button>
-                  {formNote && (
-                    <p key={formNote} className="form-note animate-in" id="formNote" style={{ color: formNoteColor }}>
-                      {formNote}
-                    </p>
-                  )}
-                </form>
+                  </form>
+
+                  {/* Success state: overlaid on the form panel, only activates
+                      after a confirmed successful API response */}
+                  <ContactSuccessState visible={submittedOk} />
+                </div>
               </div>
             </div>
           </section>

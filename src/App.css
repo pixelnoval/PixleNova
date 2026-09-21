@@ -2101,3 +2101,322 @@ footer{border-top:1px solid var(--line);padding:64px 0 32px}.footer-top{display:
   transform: translateY(0) !important;
   transition: none !important; /* Disconnect from standard scroll reveal transitions */
 }
+
+/* ============================================================
+   CONTACT SUCCESS STATE
+   Cinematic transmission confirmation overlay.
+   Rendered inside .form-panel-wrapper — no modal, no page change.
+   Only activates after confirmed successful POST /api/contact.
+   ============================================================ */
+
+/* ── Wrapper that holds form + success state in same space ── */
+.form-panel-wrapper {
+  position: relative;
+}
+
+/* ── The success state itself ──────────────────────────────── */
+.contact-success-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  /* Invisible until visible prop is true */
+  opacity: 0;
+  pointer-events: none;
+  /* Delayed entrance — gives the form time to fade out first */
+  transition: opacity 0.4s ease 0.2s;
+  padding: 48px 32px;
+  border: 1px solid var(--line);
+  background: rgba(3, 8, 24, 0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.contact-success-state.cs-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Ring + checkmark wrapper ──────────────────────────────── */
+.cs-ring-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+  flex-shrink: 0;
+}
+
+/* Expanding halo behind the ring */
+.cs-ring-expand {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(143, 176, 255, 0.12);
+  transform: scale(1);
+  opacity: 0;
+  transition: none;
+}
+.cs-ring-expand--active {
+  animation: csRingExpand 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
+}
+@keyframes csRingExpand {
+  0%   { transform: scale(1);    opacity: 0.5; }
+  100% { transform: scale(1.38); opacity: 0; }
+}
+
+/* ── Primary ring SVG ────────────────────────────────────────── */
+.cs-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start draw from top */
+}
+
+/* Ring path: drawn via stroke-dashoffset */
+.cs-ring-path {
+  stroke-dasharray: 326.73; /* 2π × 52 */
+  stroke-dashoffset: 326.73;
+  transition: none;
+}
+.cs-ring-svg--active .cs-ring-path {
+  animation: csRingDraw 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes csRingDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Inner accent arc */
+.cs-ring-accent {
+  stroke-dasharray: 301.59; /* 2π × 48 */
+  stroke-dashoffset: 301.59;
+  transition: none;
+}
+.cs-ring-svg--active .cs-ring-accent {
+  animation: csAccentDraw 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+@keyframes csAccentDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Checkmark SVG ────────────────────────────────────────────── */
+.cs-check-svg {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+}
+
+.cs-check-path {
+  /* polyline total length ≈ 36 */
+  stroke-dasharray: 52;
+  stroke-dashoffset: 52;
+  transition: none;
+}
+.cs-check-svg--active .cs-check-path {
+  animation: csCheckDraw 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes csCheckDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Particles ────────────────────────────────────────────────── */
+.cs-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cs-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  opacity: 0;
+  transform: scale(0);
+}
+
+/* Six particles positioned around the ring */
+.cs-particle--1 { top:  4%;  left: 50%; transform-origin: center; }
+.cs-particle--2 { top: 20%;  right: 8%; transform-origin: center; }
+.cs-particle--3 { bottom: 20%; right: 8%; transform-origin: center; }
+.cs-particle--4 { bottom: 4%; left: 50%; transform-origin: center; }
+.cs-particle--5 { bottom: 20%; left: 8%; transform-origin: center; }
+.cs-particle--6 { top: 20%;  left: 8%; transform-origin: center; }
+
+.cs-particle--active {
+  animation: csParticle 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* Stagger each particle */
+.cs-particle--1.cs-particle--active { animation-delay: 0.25s; }
+.cs-particle--2.cs-particle--active { animation-delay: 0.32s; }
+.cs-particle--3.cs-particle--active { animation-delay: 0.39s; }
+.cs-particle--4.cs-particle--active { animation-delay: 0.46s; }
+.cs-particle--5.cs-particle--active { animation-delay: 0.53s; }
+.cs-particle--6.cs-particle--active { animation-delay: 0.60s; }
+
+@keyframes csParticle {
+  0%   { opacity: 0;    transform: scale(0)   translateY(0); }
+  30%  { opacity: 0.65; transform: scale(1.2) translateY(-4px); }
+  100% { opacity: 0;    transform: scale(0.4) translateY(-8px); }
+}
+
+/* ── Copy block ──────────────────────────────────────────────── */
+.cs-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  width: 100%;
+}
+
+/* "MESSAGE TRANSMITTED" */
+.cs-title {
+  font: 600 12px var(--font-mono);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 18px;
+  opacity: 0;
+  transform: translateY(10px);
+  clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+  transition: none;
+}
+.cs-title--active {
+  animation: csTitleReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes csTitleReveal {
+  0%   { opacity: 0; transform: translateY(10px); clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
+  100% { opacity: 1; transform: translateY(0);    clip-path: polygon(0 -20%,  100% -20%,  100% 120%,  0 120%); }
+}
+
+/* Supporting text */
+.cs-subtitle {
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.75;
+  margin: 0 0 28px;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: none;
+}
+.cs-subtitle--active {
+  animation: csSubtitleReveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes csSubtitleReveal {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* "TRANSMISSION COMPLETE" */
+.cs-status {
+  font: 9px var(--font-mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-low);
+  margin: 0;
+  opacity: 0;
+  transition: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* tiny dot before the status label */
+.cs-status::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  box-shadow: 0 0 6px var(--blue-soft);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.cs-status--active {
+  animation: csFadeIn 0.6s ease forwards;
+}
+@keyframes csFadeIn {
+  to { opacity: 1; }
+}
+
+/* ── Mobile overrides (≤560px) ───────────────────────────────── */
+@media (max-width: 560px) {
+  .cs-ring-wrapper {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+  }
+  /* Recalculate dasharray for r=34.67 (scale 80/120 * 52 = 34.67) */
+  .cs-ring-path  { stroke-dasharray: 217.82; stroke-dashoffset: 217.82; }
+  .cs-ring-accent{ stroke-dasharray: 201.06; stroke-dashoffset: 201.06; }
+  @keyframes csRingDraw  { to { stroke-dashoffset: 0; } }
+  @keyframes csAccentDraw{ to { stroke-dashoffset: 0; } }
+
+  .cs-check-svg {
+    width: 32px;
+    height: 32px;
+  }
+  .cs-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+  .cs-subtitle {
+    font-size: 13px;
+  }
+  /* Hide particles on mobile — GPU consideration */
+  .cs-particles {
+    display: none;
+  }
+}
+
+/* ── Reduced-motion support ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Override all animations with instant fade */
+  .cs-ring-path,
+  .cs-ring-accent {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .cs-check-path {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .cs-ring-expand,
+  .cs-ring-expand--active {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .cs-particles {
+    display: none !important;
+  }
+  /* Titles/subtitles: simple opacity transition, no movement */
+  .cs-title,
+  .cs-subtitle,
+  .cs-status {
+    transform: none !important;
+    clip-path: none !important;
+    animation: none !important;
+    transition: opacity 0.4s ease !important;
+  }
+  .cs-title--active,
+  .cs-subtitle--active,
+  .cs-status--active {
+    opacity: 1 !important;
+  }
+  /* Ensure the success state itself still transitions in (opacity only) */
+  .contact-success-state {
+    transition: opacity 0.3s ease !important;
+  }
+}
