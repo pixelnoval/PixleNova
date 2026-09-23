@@ -20,6 +20,7 @@ import { useStarfield } from './hooks/useStarfield';
 import { useThreeBackground } from './hooks/useThreeBackground';
 import CinematicIntro from './components/CinematicIntro';
 import ContactSuccessState from './components/ContactSuccessState';
+import { submitWithColdStartRetry, prewarmBackend } from './utils/apiResilience';
 import svcWeb from './assets/services/svc-web.jpg';
 import svcMarketing from './assets/services/svc-marketing.jpg';
 import svcMedia from './assets/services/svc-media.jpg';
@@ -92,9 +93,11 @@ function App() {
   const isNavigating = useRef(false);
   const processSectionRef = useRef(null);
 
+  const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
   const [formNote, setFormNote] = useState('Your enquiry stays confidential.');
   const [formNoteColor, setFormNoteColor] = useState('var(--ink-low)');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState('idle'); // 'idle' | 'submitting' | 'waking' | 'connecting' | 'success'
   const [submittedOk, setSubmittedOk] = useState(false);
   const resetTimerRef = useRef(null);
 
@@ -262,10 +265,28 @@ function App() {
 
   const closeMenu = () => setMenuOpen(false);
 
+  // Prewarm backend non-blockingly when contact section scrolls into view
+  useEffect(() => {
+    const contactEl = document.getElementById('contact');
+    if (!contactEl) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          prewarmBackend(apiUrl);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '120px 0px', threshold: 0.05 }
+    );
+    observer.observe(contactEl);
+    return () => observer.disconnect();
+  }, [apiUrl]);
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
+    setSubmitPhase('submitting');
     setFormNote('');
     const form = e.target;
     const data = {
@@ -274,49 +295,33 @@ function App() {
       message: form.projectDetails.value,
     };
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
     try {
-      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
-      const response = await fetch(`${apiUrl}/api/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        signal: controller.signal,
+      await submitWithColdStartRetry({
+        url: `${apiUrl}/api/contact`,
+        healthUrl: `${apiUrl}/api/health`,
+        data,
+        onStatusChange: ({ phase }) => {
+          setSubmitPhase(phase);
+        },
+        maxWaitMs: 75000,
+        initialTimeoutMs: 11000,
+        pollIntervalMs: 4500,
       });
 
-      let result = null;
-      try {
-        result = await response.json();
-      } catch {
-        // Non-JSON response (e.g. proxy 502/503)
-      }
-
-      if (!response.ok) {
-        setFormNote(result?.message || `Server error (${response.status}). Please try again.`);
-        setFormNoteColor('rgba(255,100,100,0.9)');
-      } else {
-        // ── SUCCESS: show cinematic success state ──────────────────────────────
-        setSubmittedOk(true);
-        // Defer reset so the user can fully see the success confirmation first.
-        // The timer is stored in a ref so it can be cleaned up if the component
-        // unmounts before the delay fires.
-        if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-        resetTimerRef.current = setTimeout(() => {
-          form.reset();
-          resetTimerRef.current = null;
-        }, 2200);
-      }
+      // ── SUCCESS: show cinematic success state ──────────────────────────────
+      setSubmitPhase('success');
+      setSubmittedOk(true);
+      // Defer reset so the user can fully see the success confirmation first.
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = setTimeout(() => {
+        form.reset();
+        resetTimerRef.current = null;
+      }, 2200);
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setFormNote('Server took too long to respond. The backend may be starting up — please try again.');
-      } else {
-        setFormNote(err.message || 'Unable to send your enquiry. Please check your connection and try again.');
-      }
+      setSubmitPhase('idle');
+      setFormNote(err.message || 'Unable to send your enquiry. Please check your connection and try again.');
       setFormNoteColor('rgba(255,100,100,0.9)');
     } finally {
-      clearTimeout(timeoutId);
       setIsSubmitting(false);
     }
   };
@@ -827,6 +832,7 @@ function App() {
                     className="form-panel reveal contact-anim-5"
                     id="contactForm"
                     onSubmit={handleFormSubmit}
+                    onFocus={() => prewarmBackend(apiUrl)}
                     style={{
                       opacity: submittedOk ? 0 : 1,
                       pointerEvents: submittedOk ? 'none' : 'auto',
@@ -852,17 +858,42 @@ function App() {
                       <textarea className="contact-textarea" required name="projectDetails" placeholder="Tell us what you need..."></textarea>
                     </div>
                     <button
-                      className="btn btn-primary submit-btn contact-submit"
+                      className={`btn btn-primary submit-btn contact-submit ${submitPhase === 'waking' ? 'waking' : ''} ${submitPhase === 'connecting' ? 'connecting' : ''}`}
                       type="submit"
                       disabled={isSubmitting || submittedOk}
                     >
-                      {isSubmitting ? 'SUBMITTING...' : (
+                      {submitPhase === 'waking' ? (
+                        <>
+                          <span className="waking-pulse-dot" aria-hidden="true"></span>
+                          WAKING UP SERVER...
+                        </>
+                      ) : submitPhase === 'connecting' ? (
+                        <>
+                          <span className="waking-pulse-dot" aria-hidden="true"></span>
+                          CONNECTING...
+                        </>
+                      ) : isSubmitting ? (
+                        'SUBMITTING...'
+                      ) : (
                         <>START A CONVERSATION <ArrowUpRight className="contact-submit-arrow" size={15} style={{ marginLeft: '4px', transition: 'transform 0.3s ease' }} /></>
                       )}
                     </button>
-                    {/* Only show formNote for errors — never show it alongside the
-                        cinematic success state */}
-                    {formNote && !submittedOk && (
+
+                    {/* Cold start waking notice card */}
+                    {(submitPhase === 'waking' || submitPhase === 'connecting') && !submittedOk && (
+                      <div className="waking-status-card animate-in" role="status" aria-live="polite">
+                        <div className="waking-status-header">
+                          <span className="waking-status-indicator"></span>
+                          <span className="waking-status-title">Cold Start Recovery Active</span>
+                        </div>
+                        <p className="waking-status-text">
+                          Server is spinning up from sleep mode. Please hold on — your message will submit automatically.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Only show formNote for errors — never show it alongside success or waking notice */}
+                    {formNote && !submittedOk && submitPhase !== 'waking' && submitPhase !== 'connecting' && (
                       <p key={formNote} className="form-note animate-in" id="formNote" style={{ color: formNoteColor }}>
                         {formNote}
                       </p>

@@ -5,13 +5,40 @@ import { createError } from '../middleware/errorMiddleware.js';
 
 // ─── PUBLIC ──────────────────────────────────────────────────────────────────
 
+// In-memory cache for idempotent submissions (submissionId -> { timestamp, response })
+// Retains records for 10 minutes to prevent duplicate DB writes and duplicate emails on retry.
+const processedSubmissions = new Map();
+
+function cleanOldSubmissions() {
+  const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+  for (const [id, entry] of processedSubmissions.entries()) {
+    if (entry.timestamp < tenMinutesAgo) {
+      processedSubmissions.delete(id);
+    }
+  }
+}
+setInterval(cleanOldSubmissions, 5 * 60 * 1000).unref?.();
+
 /**
  * POST /api/contact
  * Public — no authentication required.
  * Validates, saves enquiry, then fires email notifications asynchronously.
+ * Supports idempotency via X-Submission-Id / Idempotency-Key headers or submissionId body field.
  */
 export async function submitContact(req, res, next) {
   try {
+    const rawSubmissionId =
+      req.headers['x-submission-id'] ||
+      req.headers['idempotency-key'] ||
+      req.body?.submissionId;
+    const submissionId = typeof rawSubmissionId === 'string' ? rawSubmissionId.trim().slice(0, 128) : null;
+
+    // Duplicate submission check: if already processed recently, return cached response
+    if (submissionId && processedSubmissions.has(submissionId)) {
+      const cached = processedSubmissions.get(submissionId);
+      return res.status(200).json(cached.response);
+    }
+
     const { errors, data } = validateContact(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ success: false, message: errors[0] });
@@ -34,10 +61,19 @@ export async function submitContact(req, res, next) {
       sendAcknowledgement(contact).catch(err => console.error('[Email] Unexpected acknowledgement error:', err.message));
     });
 
-    res.status(201).json({
+    const responseBody = {
       success: true,
       message: 'Your enquiry has been received. We\'ll be in touch soon.',
-    });
+    };
+
+    if (submissionId) {
+      processedSubmissions.set(submissionId, {
+        timestamp: Date.now(),
+        response: responseBody,
+      });
+    }
+
+    res.status(201).json(responseBody);
   } catch (err) {
     next(err);
   }
